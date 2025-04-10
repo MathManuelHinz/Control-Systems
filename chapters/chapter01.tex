@@ -1,0 +1,174 @@
+\chapter{Control Problems}
+
+\begin{enumerate}
+    \item $u$ is the  \dhighlight{control (input / action)}
+    \item $y$ observations (outputs)
+    \item $\phi:Y\to U$ policy
+    \item $\text{ff}$ feed forward control (plan we had)
+\end{enumerate}
+
+Interactions with the outside world might be hidden in the observations. Typically $\ff$ is 
+in regard to some reference state. There might be some disturbances (holes in the road, \dots).
+
+The overall aim is to find a policy \(\phi\) that sticks close to $r(k),k\geq 0$ \marginnote{$t$ is continous, $k$ is step by step / iterative}.
+\[u(k)=u_\ff(k)+U_{fb}(k)\]
+where $u_\ff$ is the planing to reach the overall goal and $u_{\fb}$ actual steering, updated "all the time".
+
+Some examples from the book:
+
+\begin{figure}[H]\label{fig:1.01}
+    \centering
+    \includegraphics[width=.7\textwidth]{example-image}
+    \caption{Sketch 1.01}
+\end{figure}
+
+\begin{figure}[H]\label{fig:1.02}
+    \centering
+    \includegraphics[width=.7\textwidth]{example-image}
+    \caption{Sketch 1.02: Mountain car}
+\end{figure}
+
+Difference: In Reinforcement learning, we don't start with a model / ode. 
+
+Some part of reinforcement learning works model-free (i.e. assumes the model only implicitly)
+
+\begin{figure}[H]\label{fig:1.03}
+    \centering
+    \includegraphics[width=.7\textwidth]{example-image}
+    \caption{Sketch 1.03: cart pole / inverted pendulum}
+\end{figure}
+
+Next example: Acrobot (more then one equilibrium)
+
+\section{State Space Models}
+
+We have some
+
+\begin{itemize}
+    \item \dhighlight{state space} \(X,x\in X\)
+    \item \dhighlight{action space} \(U, u\in U\)
+    \item \dhighlight{action} at step \(k: u(k)\in U(k)\), i.e. we might have some constraints
+    \item \dhighlight{observation space \(Y,y\in Y\)}
+\end{itemize}
+
+\begin{definition}\label{def:1,1} \marginnote{\(x(k)\) might include the past, might be useful for the stock trading problem}
+    Given state, action and observation spaces \(X,U,Y\), a \dhighlight{state space model}
+    is defined by
+    \begin{align}\label{eq:1}
+        x(k+1)&=\cF(x(k),u(k))\\
+        y(k)&=\mathcal{C}(x(k),u(k))  
+    \end{align}
+\end{definition}
+
+\begin{remark}
+    Overcomplicating problems by loading lots of information into the state space, might make the problem harder!
+\end{remark}
+
+\subsection{Linear State Space Model}
+
+\begin{align}\label{eq:lssm}
+    x(k+1)&=Fx(k)+Gu(k)\\
+    y(k)&=Cx(k)+Du(k)
+\end{align}
+
+\begin{remark}
+    The representations (in terms of the matrices) might not be unique!
+\end{remark}
+
+Common scenario for (\ref{eq:lssm}) is to keep \(x(k)\) near the origin. You have to think about robustness of the system. 
+Disturbances should be handled by the system. 
+
+\begin{align*}
+    u(k)&=-Kx(k).
+\end{align*}
+
+Consider a disturbance under the same control:
+\begin{align*}
+    u(k)=-Kx(k)+v(k)
+\end{align*} 
+inserting this into (\ref{eq:lssm}) yields
+\begin{align*}
+    x(k+1) &= (F-GK)x(k)-Gv(k)\\
+    y(k) &= (C-DK)x(k)+Dv(k)
+\end{align*}
+
+Closed vs open loop: In closed loops we don't change our course based on observations, while in open loop systems we do.
+% TODO: Check
+
+\subsection{State Space Models in continuous Time}
+
+\[\frac{d}{dt}x=f(x,u)\]
+for \(x\in \R^n, u\in \R^m\). We often write \(u_t,x_t\) for \(u,x\) at time \(t\).
+If \(f\) is linear we get
+\begin{align*}
+    \frac{d}{dt}x&=Ax+Bu\\
+    y&=Cx+Du
+\end{align*}
+
+\begin{figure}[H]\label{fig:1.04}
+    \centering
+    \includegraphics[width=.7\textwidth]{example-image}
+    \caption{Sketch 1.04}
+\end{figure}
+
+To discretize we use the \dhighlight{forward Euler method}. Given time interval \(\Delta\)
+\[x(k+1)=x(k)+\Delta f(x(k),u(k))\]
+so in (\ref{eq:1}) \(\cF(x,u)=x+\Delta f(x,u)\).
+Using Taylor
+\[x_{t+ \Delta}=x_t \Delta f(x,u)+O(\Delta^2)\]
+
+For the linear model we get 
+\(F=I+\Delta A\)
+\begin{align*}
+    x(k+1) &= x(k)+\Delta Ax(k)+\underbrace{\Delta B}_{\eqqcolon G}u(k)
+\end{align*}
+
+For now fix some policy \(\phi\), so \(u(k)=\phi(x(k))\):
+\[x(k+1)=\cF(x(k))\]
+\dhighlight{Assumption 2:} \label{ass:1.2}
+
+The state space \(X\) is equal to \(\R^n\) or a closed subset of \(\R^n\).
+
+\begin{definition}\label{def:1.3}
+    An \dhighlight{equilibrium} \(x^e\) is a state at which is system is frozen:
+    \[x^e=\cF(x^e).\]
+\end{definition}
+
+
+\begin{definition}\label{def:1.4}\marginnote{The same concept with a different sign comes up in RL under the term \dhighlight{reward}}
+    Given a \dhighlight{cost function} \(C:X\to \R_+\) and a 
+    policy \(\phi\) we define 
+    \[J_\phi(x)=J(x)=\sum_{k=0}^\infty C(x(k)),\ x(0)=x\] 
+    This is called \dhighlight{total cost} or \dhighlight{value function} of the policy \(\phi\).
+\end{definition}
+Given \(x^e\), we usually assume \(C(x^e)=0\). Generally, we consider a discount factor \(\gamma^k\) in front of \(C(x(k))\).
+
+\begin{definition}\label{def:1.5}
+    Denote by \(\cX(k;x_0)\) the state step \(k\) with initial condition \(x_0\) and following fixed policy \(\phi\).
+    The equilibrium \(x^e\) is \dhighlight{stable in the sense of Lyapunov} if for all 
+    \(\epsilon>0\exists \delta>0\) s.t. \(\Vert x_0-x^e\Vert < \delta\), then 
+    \[\Vert \cX(k;x_0)-\cX(k;x_0)\Vert<\epsilon \forall k\geq 0\]
+\end{definition}
+
+\begin{figure}[H]\label{fig:1.05}
+    \centering
+    \includegraphics[width=.7\textwidth]{example-image}
+    \caption{Sketch about Lyapunov stability}
+\end{figure}
+
+\begin{definition}\label{def:1.6}
+    An equilibrium is said to be \dhighlight{asymptotically stable} if 
+    \(x^e\) is stable in the sense of Lyapunov and for some \(\delta_0>0\),
+    whenever \(\Vert x_0-x^e\Vert<\delta_0\), it follows
+    \[\lim_{k \to\infty} \cX(k,x_0)=x^e.\]
+    The set of \(x_0\) for which this holds is the \dhighlight{region of attraction} for 
+    \(x^e\), An equilibrium is \dhighlight{globally asymptotically stable} if the region of attraction 
+    is \(X\). 
+\end{definition}
+
+
+
+
+
+\markeol{01}
+ 
