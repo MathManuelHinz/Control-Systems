@@ -125,9 +125,9 @@ For the linear model we get
 
 For now fix some policy \(\phi\), so \(u(k)=\phi(x(k))\):
 \[x(k+1)=\cF(x(k))\]
-\dhighlight{Assumption 2:} \label{ass:1.2}
-
-The state space \(X\) is equal to \(\R^n\) or a closed subset of \(\R^n\).
+\begin{assumption}\label{ass:1.2}
+    The state space \(X\) is equal to \(\R^n\) or a closed subset of \(\R^n\).
+\end{assumption}
 
 \begin{definition}\label{def:1.3}
     An \dhighlight{equilibrium} \(x^e\) is a state at which is system is frozen:
@@ -147,7 +147,7 @@ Given \(x^e\), we usually assume \(C(x^e)=0\). Generally, we consider a discount
     Denote by \(\cX(k;x_0)\) the state step \(k\) with initial condition \(x_0\) and following fixed policy \(\phi\).
     The equilibrium \(x^e\) is \dhighlight{stable in the sense of Lyapunov} if for all 
     \(\epsilon>0\exists \delta>0\) s.t. \(\Vert x_0-x^e\Vert < \delta\), then 
-    \[\Vert \cX(k;x_0)-\cX(k;x_0)\Vert<\epsilon \forall k\geq 0\]
+    \[\Vert \cX(k;x_0)-\cX(k;x^e)\Vert<\epsilon \forall k\geq 0\]
 \end{definition}
 
 \begin{figure}[H]\label{fig:1.05}
@@ -165,10 +165,153 @@ Given \(x^e\), we usually assume \(C(x^e)=0\). Generally, we consider a discount
     \(x^e\), An equilibrium is \dhighlight{globally asymptotically stable} if the region of attraction 
     is \(X\). 
 \end{definition}
-
-
-
-
-
 \markeol{01}
- 
+
+\beginlecture{02}{15.04.2025}
+
+\begin{definition}[Lyapunov function]\label{def:1.07}
+
+    A function \(V:X\to \R_+\) is called \dhighlight{Lyapunov function}. We frequently
+    assume \(V\) is \dhighlight{inf-compact}, i.e.: it holds 
+    \[\forall x^0\in X:\ \{x\in X\mid V(x)\leq V(x^0)\}\text{ is a bounded set}.\]
+
+\end{definition}
+
+\begin{remark}
+    There is some variability in the definition of Lyapunov functions! We often assume \(V(x)\) is large if \(x\) is large.
+\end{remark}
+
+\dhighlight{Sublevel sets:} \[S_V(r)=\{x\in X \mid V(x)\leq r\}.\]
+On can see with \(V\) being inf-compact \(S_V(r)\) is either
+\begin{itemize}
+    \item empty
+    \item the whole domain \(X\) \marginnote{We usually want to avoid this}
+    \item a bounded subset of \(X\). 
+\end{itemize}
+
+Usually, \(S_V(r)=X\) is impossible, a common assumption is \dhighlight{coersiveness}:
+\[\lim_{\Vert x\Vert \to\infty} V(x)=\infty.\]
+
+\begin{example}
+    \begin{itemize}
+        \item \(V(x)=x^2\), coercive
+        \item \(V(x)=\frac{x^2}{(1+x)^2}\), not coercive, but inf-compact \(r>1: S_V(r)=\R,\ r<1: S_V(r)=[-a,a]\) with \(a=\sqrt{\frac{r}{1+r}}\)
+        \item \(V(x)=e^x\) is neither
+    \end{itemize}
+\end{example}
+
+\begin{lemma}\label{lem:1.08}
+    Suppose that the cost function \(C\) and the value function \(J\) from definition \ref{def:1.5} are non-negative and 
+    finite valued\marginnote{this is a assumption on the value function}.
+    \begin{enumerate}
+        \item \(J(x(k))\) is non-increasing in \(k\) and \(\lim_{k\to\infty} J(x(k))=0\) for each initial condition.
+        \item In addition let \(J\) be continuous, inf-compact and vanishing only at \(x^e\). Then for each initial condition 
+            \[\lim_{k\to\infty} x(k)=x^e\]
+    \end{enumerate} 
+\end{lemma}
+
+\begin{proof}
+    Consider \(J(x)=\sum_{k=0}^\infty c(x(k))\), then 
+    \begin{align*}
+        J(x) &= c(x)+\sum_{k=1}^\infty c(x(k))\\
+        &=c(x)+\sum_{k=0}^\infty c(x^+(k)); \ x^+(0)=\cF(x)\\
+        &=c(x)+ J(\mathcal{F}(x))
+    \end{align*}
+    This is the \dhighlight{dynamic programming principle} for a \dhighlight{fixed policy}.\marginnote{We are separating one step!}
+    It is also called \dhighlight{Bellmann equation}.\marginnote{\\ This is the same Bellman from the curse of dimensionality!}
+    For 1. from this it follows \begin{align*}
+        J(x(k+1))+c(x)-J(x(k)) &= 0
+    \end{align*}
+    summing up from \(k=0\) up to \(N-1\)
+    \begin{align*}
+        J(x)=J(x(N))+\sum_{k=0}^{N-1}c(x(k))\\ \implies \text{ non-increasing}
+    \end{align*}
+    Taking the limit
+    \begin{align*}
+        =\lim_{N\to\infty}\left[J(x(N)+\sum_{k=0}^{N-1}c(x(k)))\right]=\left[\lim_{N\to\infty} J(x(N))\right]+J(x)
+    \end{align*}
+    using \(J(x)\) is finite gives (i).
+
+    For 2. with \(r=J(x)\), we get \(x(k)\in S_J(k)\forall k\). Now suppose \(\{x(k_i)\}\) is a convergent subsequence
+    of the trajectory with limit \(x^\infty\). Then \(J(x^\infty)=\lim_{i\to\infty}J(x(k_i))=0\) by the continuity of \(J\).
+    We assumed \(J(x)=0 \iff x^e=x\implies x^\infty=x^e.\) Finally, the assumption follows, since each convergent subsequence reach the same value \(x^e\).
+
+\end{proof}
+
+\begin{definition}[Poisson's inequality]\label{def:1.9}\marginnote{We often assume \(\eta=0\)}
+    Let \(V,c:X\to\R_+\) and \(\eta\geq 0\). Then \dhighlight{Poisson's inequality} states that 
+    \[V(\mathcal{F}(x))\leq V(x)-c(x)+\eta.\]
+\end{definition}
+
+
+\begin{proposition}\label{prop:1.10}
+    Suppose the Poisson inequality holds with \(\eta=0\). Additionally
+    \(V\) shall be continuous, inf-compact and it shall have a unique minima at $x^e$. Then \(x^e\)
+    is stable in the sense of Lyapunov (\dhighlight{sitsoL}).    
+\end{proposition}
+
+\begin{proof}
+    \[\bigcap \{S_V(r)\mid r>V(x^e)\}=\{S_V(r)\restrict{r=V(x^e)}\}\stackrel{\text{unique minimizer}}{=}\{x^e\}.\]
+    Using compactness we get: For each \(\epsilon>0\), we can find some \(r>V(x^e)\)
+    and some \(\delta<\epsilon\) s.t. 
+    \[\{x\in X\mid \Vert x-x^e\Vert < \delta\}\subset S_V(r)\subset \{x\in X\mid \Vert x-x^e\Vert < \epsilon\}\]
+    If \(\Vert x_0-x^e\Vert<\delta\), then \(x_0\in S_v(r)\) and hence \(x(k)\in S_v(k)\)
+    since \(V(x(k))\) is non-increasing. With the second inclusion we see 
+    \[\Vert \mathcal{k}-x^e\Vert<\epsilon\forall k\]
+    This gives sitsoL.
+\end{proof}
+
+\begin{proposition}[Comparison theorem]\label{prop:1.11}\marginnote{We don't write that explictlly, but we don't start in \(x^e\)!}
+    Poisson's inequality implies 
+    \begin{enumerate}
+        \item For each \(N\geq 1\) and \(x=x(0)\) \[V(x(N))+\sum_{k=0}^{N-1}c(x(k))\leq V(x)+ N\eta\]
+        \item If \(\eta=0\), then \(J(x)\leq V(x)\forall x\)
+        \item Assume \(\eta=0\) and \(V,c\) are continuous. Suppose that \(c\) is inf-compact and vanishes only at the equilibrium \(x^e\). Then 
+              \(x^e\) is globally asymptotically stable.  
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    1. \begin{align*}
+        V(x(k+1))-V(x(k))+c(x(k))\leq \eta 
+    \end{align*}
+    summing up from \(0\) to \(N-1\):
+    \begin{align*}
+        V(x(N))-V(x(0))+\sum_{k=0}^{N-1}c(x(k))\leq N\eta
+    \end{align*}
+    2. for \(\eta=0\)the above is \(\leq 0\), so \(\sum_{k=0}^{N-1}c(x(k))\leq V(x(0))-V(x(k))\leq V(x(0))\)
+    where the LHS converges to \(J(x(0))\) for \(N\to\infty\) 
+
+    3. Show sitsoL,  with \(\eta=0\) it follows form proposition \ref{def:1.9} that \(V(x)\geq c(x)\), which gives \(V\) is 
+    also inf-compact. \marginnote{This is important!}
+    \(c\) is vanishing only at \(x^e\), so \(V(x(k))\) is strictly decreasing. When \(x(k)\neq x^e\),
+    implies \(V(x(k))\downarrow V(x^e)\) for each \(x(0)\). Further
+    \[V(x^e)<V(x(0))\ \forall x(0)\in X\setminus\{x^e\}.\] 
+    So it is a unique minimum. \(V\) has therefore the properties of proposition \ref{prop:1.10}, which gives sitsoL. 
+
+    For global: with 1. we get \[\lim_{k\to\infty}c(x(k))=0\]
+    and assumptions give us by lemma \ref{lem:1.08} that \(x(k)\to x^e\) as \(k\to\infty\).
+    So, we converge from any initial condition, which gives global asymptotical stability.
+
+\end{proof}
+
+
+\begin{proposition}\label{prop:1.12}
+    Suppose that \(V(\mathcal{F}(x))=V(x)-c(x)\). Further, we assume that 
+    \begin{enumerate}
+        \item \(J\) is continuous, inf-compact, vanishing only at \(x^e\)
+        \item \(V\) is continuous
+    \end{enumerate}
+    Then \(J(x)=V(x)-V(x^e)\).
+\end{proposition}
+
+\begin{proof}
+    As before we sum up:
+    \begin{align*}
+        V(x(0))+\overbrace{\sum_{k=0}^{N-1}c(x(k))}^{J(x(N-1))\stackrel{N\to\infty}{\to}J(x)}=V(x).
+    \end{align*}
+    Lemma \ref{lem:1.08} together with the continuity of \(V\) implies that
+    \[V(x(N))\to V(x^e)\ \text{ as }N\to\infty.\]
+    This gives \[V(x^e)+J(x)=V(x)\qedhere\]
+\end{proof}
+\markeol{02} 
