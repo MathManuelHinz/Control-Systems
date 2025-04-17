@@ -51,7 +51,7 @@ We have some
     \item \dhighlight{observation space \(Y,y\in Y\)}
 \end{itemize}
 
-\begin{definition}\label{def:1,1} \marginnote{\(x(k)\) might include the past, might be useful for the stock trading problem}
+\begin{definition}\label{def:1.1} \marginnote{\(x(k)\) might include the past, might be useful for the stock trading problem}
     Given state, action and observation spaces \(X,U,Y\), a \dhighlight{state space model}
     is defined by
     \begin{align}\label{eq:1}
@@ -314,4 +314,164 @@ Usually, \(S_V(r)=X\) is impossible, a common assumption is \dhighlight{coersive
     \[V(x(N))\to V(x^e)\ \text{ as }N\to\infty.\]
     This gives \[V(x^e)+J(x)=V(x)\qedhere\]
 \end{proof}
-\markeol{02} 
+\markeol{02} % Oben solte alles \cF sein?
+\beginlecture{03}{17.04.2025}
+
+\begin{example}[Linear state space model]
+    Setting \(x(k+1)=\cF(x(k)),\) now with linear dynamics:
+    \[x(k+1)=F x(k)=F^{k+1}x(0)=F^{k+1}x.\]
+    Assume quadratic cost \(c(x)=x^\intercal S x\), where \(S\) is symmetric and 
+    positive definite.
+    Observe
+    \[c(x(k))=(F^kx)^\intercal S F^k x\]
+    Summing up yields 
+    \begin{align*}
+        J(x)&=x^\intercal \underbrace{\left[\sum_{k=0}^{\infty} (F^k)^\intercal S F^k\right]}_{\eqqcolon M}x
+    \end{align*}
+    THis satisfies a linear fixed point equation:\marginnote{This is also called \dhighlight{discrete time} \dhighlight{Lyapunov equation}}
+    \begin{equation}\label{eq:dle}
+        M=S+F^\intercal M F
+    \end{equation}
+    One can show for the linear state space model, that the following are equivalent:
+    \begin{enumerate}
+        \item the origin is asymptotically stable 
+        \item the origin is globally asymptotically stable 
+        \item Each eigenvalue \(\lambda\) of \(F\) satisfies \(|\lambda|<1\)
+        \item (\ref{eq:dle}) admits a solution \(M\) positive semi-definite for any \(S\) positive semidefinite.
+    \end{enumerate}
+
+    Reference: arxiv: 2007.01367 % TODO
+
+\end{example}
+
+Consider \ref{def:1.1} without \(y\)
+\[y(k+1)=\cF(x(k),u(k))\]
+with \[c:X\times U\to \R_+.\]
+The total cost \(J_\phi\) for a given \(\phi\) given 
+\(u(k)=\phi(x(k))\) is 
+\[J_\phi(x)=\sum_{k=0}^\infty c(x(k),u(k)).\]
+The optimal value function is the minimum over all controls \marginnote{This describes the optimal control policy (OCP)}
+\begin{equation}\label{eq:OCP}
+    J^\star(x)=\min_{\underbar{U}=[u(0),u(1),\dots]} \sum_{k=0}^\infty c(x(k),u(k)),\ x(0)=x\in X
+\end{equation}
+
+\begin{remark}
+    The minimizer might not be unique! In harder settings this might need to be an inf!
+\end{remark}
+
+\dhighlight{Goal:} Find a control sequence that achieves the minimum. \marginnote{and the corrensponding policy}
+
+Computationally we can't expect to calculate \(J_\phi\) exactly, but we will approximate it. 
+\begin{remark}
+    We are in the infinite horizon setting (infinite time steps) to talk about the stability. For this it is important 
+    that the equilibrium has cost \(0\). Without an equilibrium we can also think about discounted value functions \[J_\phi=\sum_{k=0}^\infty \gamma^k c(x(k),u(k))\]
+\end{remark}
+
+We will see later that it holds for the sequence \(x^\star\) achieving the minimum 
+\[J^\star(x^\star(k))=c(x^\star(k),u^\star(k))+J(x^\star(k+1))\]
+which is definition \ref{def:1.9} with \(\eta=0\) and equality.
+
+Proposition \ref{prop:1.11} implies, under some conditions, that \(x^e\)
+is globally asymptotically stable.
+
+%To achieve finiteness
+Under the following assumptions \(J^\star\) is finite:
+\begin{enumerate} % Fix equilibria
+    \item there is a (target) state \(x^e\) that is an equilibria for some control \(F(x^e,u^e)=x^e\)
+    \item \(c\geq 0,c(x^e,u^e)=0\)
+    \item for any initial condition \(x(0)=x\) there is a control sequence \(\underbar{u}\) and a time \(T\), such that \(x(T)=x^e\) for \(x(0)=x\) using control \(\underbar{u}\).\marginnote{This is sometimes called \dhighlight{controllability}}
+\end{enumerate}
+
+\begin{example}[Linear Quadratic Regulator]
+    Consider linear dynamics \ref{eq:lssm} %TODO: check
+     from the first lecture with 
+    quadratic cost \(c(x,u)=x^\intercal Sx+u^\intercal Ru\) with \(S\) positive semi-definite and 
+    \(R\) positive definite.
+    Reminder: \(u=-Kx\).
+
+    If there is a policy for which \(J^\star\) is finite, then 
+    \begin{align*}
+        J^\star(x)=x^\intercal M^\star x
+    \end{align*}
+    with \(M^\star\) positive semi-definite and 
+    \[\phi^\star(x)=-K^\star(x)\]
+    with \(K^\star\) depends on \(M^\star,R,F,G\). \marginnote{and implicitly on \(c\)}
+\end{example}
+
+\subsection*{Bellmann equation}
+\begin{figure}[H]\label{fig:1.06}
+    \centering
+    \includegraphics[width=.7\textwidth]{example-image}
+    \caption{Sketch 1.06; Principle of optimality}
+\end{figure}
+
+\dhighlight{Observation:}
+
+\begin{align*}
+    J^\star(x)&=\min_{\underbar{u}}\left[\sum_{k=0}^{k_m-1}c(x(k),u(k))+\sum_{k_m}^\infty c(x(k),u(k))\right]\\
+    &=\min_{u[0,\dots,k_m-1]}\left[\sum_{k=0}^{k_m-1}c(x(k),u(k))+\underbrace{\min_{u[k_m,\dots,]}\sum_{k_m}^\infty c(x(k),u(k))}_{=J^*(x(k_m))}\right]
+\end{align*}
+
+This gives \marginnote{which can be seen as a kind of fix point equation}
+\[J^*(x)=\min_{u[0,\dots,k_m-1]}\left[\sum_{k=0}^{k_m-1}c(x(k),u(k))\right]+J^\star(x(k_m)).\]
+
+With \(k_m=1\) we have shown the following theorem 
+\begin{theorem}[\dhighlight{Bellmann equation}, \dhighlight{Dynamic Programming} equation]\label{thm:1.13}
+    Assume that \(J^\star\) is finite and optimal control \(u^\star\) solving (\ref{eq:OCP}) exists.
+    Then the value function satisfies 
+    \begin{equation}\label{eq:bellmann}
+        J^\star(x)\min_{u}\{c(x,u)+J^\star(\cF(x,c))\}
+    \end{equation}
+\end{theorem}
+
+Suppose the minimum is unique for each \(x\) and let \(\phi^\star(x)\) denote 
+the minimum feedback law at \(x\). Then the optimal control is expressed as 
+\[u^\star(k)=\phi^\star(x^\star(k)).\]
+
+\begin{definition}[Q-function]\label{def:1.14}\marginnote{Definition, which is not so useful for the analysis, but for the pratical application!}
+    The function of two variables within the minimum in (\ref{eq:bellmann}) is called \dhighlight{Q}-function.
+    \[Q^\star(x,u)=c(x,u)+J^\star(\cF(x,u))\]
+    In the optimal case we write \(Q^\star\). Thus 
+    \[J^\star(x)=\min_{u}Q^\star(x,u).\] 
+    The optimal feedback law is then 
+    \[\phi^\star(x)\in\argmin_{u}Q^\star(x,u).\]    
+\end{definition} % FIX argmin
+
+The \(Q\)-function solves the fixed point equation 
+\[Q^\star(x,u)=c(x,u)+\min_{u}Q^\star(\cF(x,u),u).\]
+This already gives a hint for an algorithm coming later next lecture.
+
+\begin{remark}
+    In RL the difference is that we don't know the model, we only observe state action pairs.
+    This motivates the \(Q\)-function.        
+\end{remark}
+
+\subsection*{Some concepts from Reinforcement Learning}
+
+\dhighlight{Actors and critic:}
+
+Given is a parameterized family of policies \(\{\phi^\theta\mid \theta\in \R^d\}\).
+the \dhighlight{actors}. For each \(\theta\), observe the trajectories by their states 
+\(x\) and actions \(u\) determined by their policy.
+
+The \dhighlight{critic} approximates the associated value function 
+\(\tilde{J}_\theta\). Aim for the minimum 
+\[\theta^\star=\argmin_{\theta}\langle v, \tilde{J}_\theta \rangle,\]\marginnote{scalar product in \(\R^n\) (all states?)}
+where the weight vector \(v\geq 0\) reflects the weighting of the states. \(v(x)\) is large for \textit{important} states.
+
+\dhighlight{Temporal differences:}
+
+\[J_\theta(x(k))=c(x(k),u(k\mid\theta))+J_\theta(x(k+1))\]
+Look for an approximation \(\hat{J}\) for which the error is small (w.r.t. the equality above).
+
+\dhighlight{Temporal differences} are \marginnote{What changes, or what is the information gain}
+\[D_{k+1}(\hat{J})\coloneqq -\hat{J}(x(k))+\hat{J}(x(k+1))+c(x(k),u(k)).\]
+
+After \(N\) samples 
+\[\Gamma(\hat{J})\coloneqq \frac{1}{N}\sum_{k=0}^{N-1} D_{k+1}(\hat{J})^2.\]
+We can optimize / minimize this.
+
+There is a whole class of TD algorithms and those fit into the actors critic approach!
+
+\markeol{03}
+
