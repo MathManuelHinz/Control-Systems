@@ -8,5 +8,16 @@
         "surjective",
         "uncountably"
     ],
-    "latex-workshop.latex.autoBuild.run": "onSave"
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    "latex-workshop.latex.recipes":[
+        {
+            "name": " pdflatex * 2",
+            "tools": [
+                "pdflatex",
+                "bibtex",
+                "pdflatex",
+                "pdflatex"
+            ]
+        }
+    ]
 }

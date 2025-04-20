@@ -232,7 +232,8 @@ Usually, \(S_V(r)=X\) is impossible, a common assumption is \dhighlight{coersive
     \end{align*}
     using \(J(x)\) is finite gives (i).
 
-    For 2. with \(r=J(x)\), we get \(x(k)\in S_J(k)\forall k\). Now suppose \(\{x(k_i)\}\) is a convergent subsequence
+
+    For 2. with \(r=J(x)\), we get \(x(k)\in S_J(r)\forall k\). Now suppose \(\{x(k_i)\}\) is a convergent subsequence
     of the trajectory with limit \(x^\infty\). Then \(J(x^\infty)=\lim_{i\to\infty}J(x(k_i))=0\) by the continuity of \(J\).
     We assumed \(J(x)=0 \iff x^e=x\implies x^\infty=x^e.\) Finally, the assumption follows, since each convergent subsequence reach the same value \(x^e\).
 
@@ -255,7 +256,7 @@ Usually, \(S_V(r)=X\) is impossible, a common assumption is \dhighlight{coersive
     Using compactness we get: For each \(\epsilon>0\), we can find some \(r>V(x^e)\)
     and some \(\delta<\epsilon\) s.t. 
     \[\{x\in X\mid \Vert x-x^e\Vert < \delta\}\subset S_V(r)\subset \{x\in X\mid \Vert x-x^e\Vert < \epsilon\}\]
-    If \(\Vert x_0-x^e\Vert<\delta\), then \(x_0\in S_v(r)\) and hence \(x(k)\in S_v(k)\)
+    If \(\Vert x_0-x^e\Vert<\delta\), then \(x_0\in S_V(r)\) and hence \(x(k)\in S_V(r)\)
     since \(V(x(k))\) is non-increasing. With the second inclusion we see 
     \[\Vert x(k)-x^e\Vert<\epsilon\forall k\]
     This gives sitsoL.
@@ -279,10 +280,10 @@ Usually, \(S_V(r)=X\) is impossible, a common assumption is \dhighlight{coersive
     \begin{align*}
         V(x(N))-V(x(0))+\sum_{k=0}^{N-1}c(x(k))\leq N\eta
     \end{align*}
-    2. for \(\eta=0\)the above is \(\leq 0\), so \(\sum_{k=0}^{N-1}c(x(k))\leq V(x(0))-V(x(k))\leq V(x(0))\)
+    2. for \(\eta=0\) the above is \(\leq 0\), so \(\sum_{k=0}^{N-1}c(x(k))\leq V(x(0))-V(x(k))\leq V(x(0))\)
     where the LHS converges to \(J(x(0))\) for \(N\to\infty\) 
 
-    3. Show sitsoL,  with \(\eta=0\) it follows form proposition \ref{def:1.9} that \(V(x)\geq c(x)\), which gives \(V\) is 
+    3. Show sitsoL,  with \(\eta=0\) it follows form definition \ref{def:1.9} that \(V(x)\geq c(x)\), which gives \(V\) is 
     also inf-compact. \marginnote{This is important!}
     \(c\) is vanishing only at \(x^e\), so \(V(x(k))\) is strictly decreasing. When \(x(k)\neq x^e\),
     implies \(V(x(k))\downarrow V(x^e)\) for each \(x(0)\). Further
@@ -308,7 +309,7 @@ Usually, \(S_V(r)=X\) is impossible, a common assumption is \dhighlight{coersive
 \begin{proof}
     As before we sum up:
     \begin{align*}
-        V(x(0))+\overbrace{\sum_{k=0}^{N-1}c(x(k))}^{J(x(N-1))\stackrel{N\to\infty}{\to}J(x)}=V(x).
+        V(x(N))+\overbrace{\sum_{k=0}^{N-1}c(x(k))}^{J(x(N-1))\stackrel{N\to\infty}{\to}J(x)}=V(x).
     \end{align*}
     Lemma \ref{lem:1.08} together with the continuity of \(V\) implies that
     \[V(x(N))\to V(x^e)\ \text{ as }N\to\infty.\]
@@ -328,7 +329,7 @@ Usually, \(S_V(r)=X\) is impossible, a common assumption is \dhighlight{coersive
     \begin{align*}
         J(x)&=x^\intercal \underbrace{\left[\sum_{k=0}^{\infty} (F^k)^\intercal S F^k\right]}_{\eqqcolon M}x
     \end{align*}
-    THis satisfies a linear fixed point equation:\marginnote{This is also called \dhighlight{discrete time} \dhighlight{Lyapunov equation}}
+    This satisfies a linear fixed point equation:\marginnote{This is also called \dhighlight{discrete time} \dhighlight{Lyapunov equation}}
     \begin{equation}\label{eq:dle}
         M=S+F^\intercal M F
     \end{equation}
@@ -340,7 +341,7 @@ Usually, \(S_V(r)=X\) is impossible, a common assumption is \dhighlight{coersive
         \item (\ref{eq:dle}) admits a solution \(M\) positive semi-definite for any \(S\) positive semidefinite.
     \end{enumerate}
 
-    Reference: arxiv: 2007.01367 % TODO
+    Reference: \cite{basar2024lecturenotescontroltheory} % TODO
 
 \end{example}
 
@@ -420,7 +421,7 @@ With \(k_m=1\) we have shown the following theorem
     Assume that \(J^\star\) is finite and optimal control \(u^\star\) solving (\ref{eq:OCP}) exists.
     Then the value function satisfies 
     \begin{equation}\label{eq:bellmann}
-        J^\star(x)\min_{u}\{c(x,u)+J^\star(\cF(x,c))\}
+        J^\star(x)=\min_{u}\{c(x,u)+J^\star(\cF(x,u))\}
     \end{equation}
 \end{theorem}
 
