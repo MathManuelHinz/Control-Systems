@@ -475,4 +475,196 @@ We can optimize / minimize this.
 There is a whole class of TD algorithms and those fit into the actors critic approach!
 
 \markeol{03}
+\beginlecture{04}{22.04.2025}
 
+\subsection{Value iteration}
+
+We approximate \(J^\star\) by a sequence of \(V^k\) given an initial value function \(V^0\).\marginnote{For infinite state spaces we will have to fix this algorithm for memory related reasons}
+\[V^{k+1}(x)=\min_{u}\{c(x,u)+V^k(\cF(x,u))\}, x\in X,\ k\geq 0\]
+This is called \dhighlight{value iteration} often shortened to VI.
+
+\begin{proposition}\label{prop:1.15}
+    Let \(V^0\) be chosen with non-negative entries and \(V^0(x^e)=0\). Further,
+    we assume
+    \begin{enumerate}
+        \item \(X,U\) are finite sets 
+        \item \(c\) is non-negative and vanishes only at \((x^e,u^e)\), and \(J^\star\) is finite valued.
+    \end{enumerate}
+    Then there is \(n_0\geq 1\) such that 
+    \[V^k(x)=J^\star(x), \ x\in X,k\geq n_0.\]
+\end{proposition}
+
+\begin{proof}\marginnote{We really exploit the finiteness!}
+    Let \(\phi^\star(x)\) be an optimal policy, and let 
+    \(n_0\geq 1\) denote the value such that 
+    \[(x^\star(k),u^\star(k))=(x^e,u^e)\]
+    for \(k\geq n_0\). This exists since \(J^\star\) is finite.
+
+    Using the principle of optimality (\ref{eq:OCP}) % TODO: fix
+     we can show
+    \begin{align}\label{eq:povi}
+        V^n(x)=\min_{u[0,\dots,n-1]} \left\{\sum_{k=0}^{n-1} c(x,u)+V^0(x(n)) \right\},\ x(0)\in X 
+    \end{align}
+    This gives 
+    \begin{align*}
+        V^n(x) & \leq \sum_{k=0}^{n-1}c(x(k),u(k))+V^0(x(n))\ \text{ for all } u \text{ including }u(k)=\phi^\star(k) \\
+               &\stackrel{n\geq n_0}{=}J^\star(x)+V^0(x(0))=J^\star(x)
+    \end{align*}
+    For such \(n\), the inequality must be an equality, due to (\ref{eq:povi}) and the use 
+    of the optimal policy.
+\end{proof}
+
+VI provides a sequence of policies \(\phi^n\)
+\[\phi^n(x)\in\argmin_{u}\{c(x,u)+V^n(\cF(x,u))\}.\]
+If we assume that \(V^0\) is non-negative and satisfies for some 
+\(\eta\geq 0\) poisson's inequality(\ref{def:1.9})
+\[V^0(\cF(x,u))\leq V^0(x)-c(x,\varphi^0(x))+\eta,\ x\in X\]
+then we get the following statement 
+\begin{proposition}\label{prop:1.16}
+    Suppose that \(V^0\) is non-negative and it holds 
+    \begin{align*}
+        \min_u (c(x,u)+V^0(\cF(x,u)))&=\{c(x,u)+V^0(\cF(x,u))\}\mid_{u=\phi^0(x)}\\
+        &\leq V^0(x)+\eta,\ x\in X
+    \end{align*}
+    Then a corresponding bound holds for each \(n\)
+    \begin{align*}
+        \{c(x,u)+V^n(\cF(x,u))\}\mid_{u=\phi^0(x)} & \leq V^n(x)+\eta_n,\ x\in X,
+    \end{align*}
+    where \(\eta_i\) is non-increasing:
+    \[\eta\geq \eta_0\geq \eta_1\dots\]
+\end{proposition}
+
+\begin{proof}
+    Write \(B^n(x)=V^{n+1}(x)-V^n(x)\)\marginnote{This is (connected to?) the Bellman error}
+    \[\eta_n\coloneqq \sup_x B^n(x).\]
+    Value iteration gives 
+    \begin{align*}
+        \{c(x,u)+V^n(\cF(x,u))\}\mid_{u=\phi^n(x)}&=\min_u\{c(x,u)+V^n(\cF(x,u))\}\\
+        &=V^{n+1}(x)=V^n(x)+B^n(x)\\
+        &\leq V^n(x)+\eta_n 
+    \end{align*}
+    For non-increasing,we consider 
+    \begin{align*}
+        V^1(x)=\{c(x,u)+V^0(\cF(x,u))\}\restrict{u=\phi^0(x)}\stackrel{\text{Assumption}}{\leq} V^0(x)+\eta
+    \end{align*}
+    which gives \(B^0(x)\leq \eta\forall x\implies\eta_0\leq \eta\).
+
+    For \(n\geq 1\) 
+    The trick is using the old control in the second line:
+    \begin{align*}
+        V^n(x)&=\{c(x,u)+V^{n-1}\cF((x,u))\}\restrict{u=\phi^{n-1}(x)}\\
+        V^{n+1}(x) &\leq \{c(x,u)+V^n(\cF(x,u))\}\restrict{u=\phi^{n-1}(x)}
+    \end{align*}
+    So, 
+    \[V^{n+1}(x)-V^{n}(x)\leq \{V^n(\cF(x,u))-V^{n-1}(\cF(x,u))\}\restrict{u=\phi^{n-1}(x)}\leq \eta_{n-1}.\]
+    Hence, \(\eta_n=\sup_x B^n(x)\leq \eta_{n-1}\).
+\end{proof}
+
+%TODO: Part of te proof?
+Now consider \(\eta=0\), so for each \(n\)
+\begin{align*}
+    \{c(x,u)+V^n(\cF(x,u))\}\restrict{u=\phi^n(x)}\leq V^n(x)
+\end{align*}
+with proposition \ref{prop:1.11} it follows 
+\begin{align*}
+    J^\star &\leq V^n(x),\ x\in X,   
+\end{align*}
+where \(J^\star\) is the total cost using policy \(\phi^n\).
+
+One view of policy iteration is the focus on updating the policy function!
+
+\subsection{Policy iteration}
+
+Start with an initial policy \(\phi^0,n=0\)
+\begin{itemize}
+    \item Compute the total cost for the policy \(\phi^n\), this is called policy evaluation
+    \[J^n(x)=\sum_{k=0}^\infty c(x(k),u(k)),\ u(k)=\phi^n(x(k))\forall x\in X\]
+    \item perform \dhighlight{policy improvement} to obtain the next policy 
+    \[\phi^{n-1}(x)\in \argmin_{u}\{c(x,u)+J^n(\cF(x,u))\},\ x\in X\]
+    \item while \textit{not good enough}
+\end{itemize}
+
+This is sometimes also called Howard's algorithm.
+
+\begin{remark}
+    The first step is some linearization and the second is the update. Like a generalization of Newton's method    
+\end{remark}
+
+% TODO
+\begin{algorithm}[H]
+    \caption{This will be fixed soon}
+    \textbf{Input:} $A\in\R^{m\times n},m\geq n$\\
+    \textbf{Output:} $R$ von der $QR$-Zerlegung ($A$ wird zerstört ``in place'')
+    \begin{algorithmic}
+    \For{$j=1,\dots, n$}
+        \For{$i=m,m-1,\dots, j+1$}
+            \State Berechne $c,s$
+            \State $A[i-1:i,j:n]=\begin{bmatrix}
+                c & s \\
+                -s & c 
+            \end{bmatrix}^t A[i-1:i,j:n]$
+        \EndFor
+    \EndFor
+    \end{algorithmic}
+\end{algorithm}
+
+\begin{proposition}\label{prop:1.17}
+    Suppose that \(J^0\) for \(\phi^0\) is finite valued. Then 
+    for each \(n\geq 0\)
+    \[\{c(x,u)+J^n(\cF(x,u))\}\restrict{u=\phi^{n+1}(x)}\leq J^n(x),\ x\in X\]
+    and consequently, the value functions are non-increasing
+    \[J^0(x)\geq J^1(x)\geq \dots\]
+\end{proposition}
+
+\begin{proof}
+    Similar to the proof of proposition \ref{prop:1.16}, where the non-increasing sequence again follows  
+    from proposition \ref{prop:1.11}. 
+\end{proof}
+
+Here we always assumed that we can compute everything, especially \(\cF\) and the infinite sum.
+
+\subsection{Exploration}
+In RL we learn from observations, each state-action pair,
+new state and observed cost gives us information. We need 
+\textit{good} and \textit{useful} information. 
+
+Consider a policy that is not optimal, but has 
+\(x(k)\to x^e\) reasonably rapidly, where we assume \(c(x^e,\cdot)=0\).
+Typically we have continuity 
+\begin{align*}
+    \lim_{k\to \infty} D_{k+1}(\hat{J}) & = \lim_{k\to\infty} \left[
+        -\hat{J}(x(k))+\hat{J}(x(k+1))+c(x(k),u(k))
+    \right] \\
+    &=-\hat{J}(x^e)+\hat{J}(x^e)+0=0. 
+\end{align*}
+
+This is not much information, one cannot further improve the policy! 
+\begin{align*}
+    \Gamma^\epsilon(\hat{J},x^i)=\frac{1}{N_\epsilon}\sum_{k=0}^{N_\epsilon-1}[D_{k+1}(\hat{J})]^2, \ x(0)=x^i
+\end{align*}
+To avoid getting \textit{small} information from long trajectories, one 
+can take a couple of shorter ones.
+
+\begin{align*}
+    \hat{\Gamma}(\hat{J})=\frac{1}{M}\sum_{i=1}^M\Gamma^\epsilon(J;x^i)
+\end{align*}
+
+How to choose \(x^i\) is current research. Much of the theoretical research 
+assume that ``every state is assumed regularly'', which is nice for results, but not so nice realistic 
+in most applications. 
+Another way to get more diverse information is to use \dhighlight{exploration}. Namely
+one modifies the trajectories, not strictly follows \(\phi^n\). 
+
+\(u(k)=\hat{\phi}(x(k),\zeta(k))\), where \(\zeta(k)\) is some form of noise.
+Typically 
+\begin{enumerate}
+    \item \(\hat{\phi}(x(k),\zeta(k))=\phi^\theta(k)\) for \textit{most} \(k\)
+    \item Choose action to explore the state-action space (e.g. randomly) the other times
+\end{enumerate}
+
+Generally, the trajectory to gather information \marginnote{this is also sometimes called off-polciy and on-policy}
+stems from a different policy than the current estimate \(\phi^\theta\). 
+
+This dilemma is called the \dhighlight{exploration-exploitation} dilemma.
+
+\markeol{04}
