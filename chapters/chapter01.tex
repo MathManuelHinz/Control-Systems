@@ -433,7 +433,7 @@ the minimum feedback law at \(x\). Then the optimal control is expressed as
     The function of two variables within the minimum in (\ref{eq:bellmann}) is called \dhighlight{Q}-function.
     \[Q^\star(x,u)=c(x,u)+J^\star(\cF(x,u))\]
     In the optimal case we write \(Q^\star\). Thus 
-    \[J^\star(x)=\min_{u}Q^\star(x,u).\] 
+    \[J^\star(x)=\min_{\bar{u}}Q^\star(x,\bar{u}).\] 
     The optimal feedback law is then 
     \[\phi^\star(x)\in\argmin_{u}Q^\star(x,u).\]    
 \end{definition} % FIX argmin
@@ -657,14 +657,154 @@ one modifies the trajectories, not strictly follows \(\phi^n\).
 
 \(u(k)=\hat{\phi}(x(k),\zeta(k))\), where \(\zeta(k)\) is some form of noise.
 Typically 
-\begin{enumerate}
+\begin{enumerate}\marginnote{this is also sometimes called off-polciy and on-policy}
     \item \(\hat{\phi}(x(k),\zeta(k))=\phi^\theta(k)\) for \textit{most} \(k\)
     \item Choose action to explore the state-action space (e.g. randomly) the other times
 \end{enumerate}
 
-Generally, the trajectory to gather information \marginnote{this is also sometimes called off-polciy and on-policy}
+Generally, the trajectory to gather information 
 stems from a different policy than the current estimate \(\phi^\theta\). 
-
 This dilemma is called the \dhighlight{exploration-exploitation} dilemma.
-
 \markeol{04}
+\beginlecture{05}{24.04.2025}
+
+\subsection{Linear Quadratic Regulator, Revisited} 
+
+We had \(J^\star(x)=x^\intercal M^\star x\) and quadratic costs,
+\(c(x,u)=x^\intercal S x+ u^\intercal R u\).
+
+For the \(Q\)-function: 
+\[Q^\star(x,u)=c(x,u)+J^\star(Fx+Gu).\]
+An optimal policy \(\phi\) is a minimum over \(Q\) w.r.t. \(u\):
+\begin{align*}
+    0=\nabla_u Q^\star(x,u^\star)=2Ru^\star+2G^\intercal M^\star(Fx + Gu^\star)
+\end{align*}
+Assuming \(R\) is positive definite; then \(R+G^\intercal M G\) is positive definite
+and therefore invertible.
+\begin{align*}
+    K^\star=\left[R+G^\intercal M^\star G\right]^{-1}G^\intercal M^\star F
+\end{align*}
+and 
+\[\phi^\star(x)=-Kx.\]
+To obtain \(M^\star\) we can solve\marginnote{This is a hint, we will prob. revisit this later}
+a fixed point equation called the \dhighlight{algebraic Riccati equation}
+\begin{equation}\label{eq:algebraic_riccati}
+    M^\star=F^\intercal\left(M^\star-M^\star G\left[R+G^\intercal M^\star G\right]^{-1}G^\intercal M^\star F+S\right)
+\end{equation} 
+\subsection{Approximate \(Q\)-functions}
+Consider a family of \(Q\)-functions \(\{Q^\theta\mid \theta\in \R^d\}\)
+to approximate \(Q^\star\). Classically used is a linear 
+parametrization 
+\[Q^\theta(x,u)=\theta^\intercal \psi(x,u),\  \theta\in\R^d\]  
+where \(\psi_i:X\times U\to\R,\ 1\leq i\leq d\) is some set of 
+basis functions. \marginnote{Think kernels, finite element basis,\dots}
+Given \(Q^\theta\) we have \(\phi^\theta(x)\in\argmin_{u}Q^\theta(x,u),\ x\in X\).
+
+Policy iteration for \(Q\)-functions:
+\begin{enumerate}
+    \item obtain \(\theta^n\) to get an approximation of \(Q^{\theta^n}\)\marginnote{Approximation since we do this sample-based in RL}
+          where \(Q^{\theta^n}(x,u)=c(x,u)+Q^{\theta^n}(x^+,u^+),\ x^+=\cF(x,u),u^+\phi^n(x^+)\)
+    \item define new policy \(\phi^{n+1}(x)\coloneqq \phi^{\theta^n}\) 
+\end{enumerate}
+
+As an alternative, consider dynamic programming equation from definition \ref{def:1.14}:
+\begin{align*}
+    Q^\star(x,u)=c(x,u)+\min_{\bar{u}}Q^\star(\cF(x,u),\bar{u}).
+\end{align*}
+We follow a given/ observed state-action trajectory \((x(k),u(k))_{k=0}^N\)
+\begin{align*}
+    Q^\star(x(k),u(k))=c(x(k),u(k))+Q^\star(x(k+1),u(k+1))
+\end{align*}
+The temporal difference / Bellmann error 
+\begin{align*}
+    D_{k+1}(Q^\theta)&=-Q^\theta(x(k),u(k))+c(x(k),u(k))+Q^\theta(x(k+1),u(k+1))
+\end{align*} 
+If \(Q^\theta=Q^\star\) then \(D_k+1(Q^\theta)=0\ \forall k\). In \(Q\)-learning 
+algorithms, one chooses \(\theta^n\) such that \(D_{k+1}(Q^{\theta^n})\)
+is small in a suitable fashion. So we minimize \(\theta\) to achieve this, i.e. 
+\begin{align*}
+    \Gamma^\epsilon(\theta)=\frac{1}{N}\sum_{i=0}^{N-1}[D_{k+1}(Q^\theta)]^2
+\end{align*} 
+
+\subsection{Bandits}
+Theory of multi-armed bandits. One has to accept some 
+loss through \dhighlight{exploration} in order to achieve(find) the best strategy.
+One \dhighlight{exploits} the learned strategy when choosing an action according to it.
+
+In the control of dynamic systems one has for each state \(x\) (or \(x(k)\)) a 
+multi-armed bandit.
+
+\subsection{Other control formulations}
+
+\dhighlight{Discounted cost:}
+\[J^\star(x)=\min_{\underbar{u}}\gamma^kc(x(k),u(k)),\ x(0)\in X\]
+where \(\gamma\in (0,1)\) is the \dhighlight{discount factor}.
+
+\dhighlight{Shortest Path Problem:}
+
+Given \(A\subset X\) define \(\tau_A\coloneqq \min\{K\geq 1\mid x(k)\in A\}\).
+\[J^\star(x)=\min_u\sum_{k=0}^{\tau_A-1}\gamma^kc(x(k),u(k)),\ x(0)=x.\]
+\begin{proposition}\label{prop:1.18}
+    If \(J^\star\) is finite valued, then it is the solution to 
+    the dynamic programming equation in the following sense:
+    \[J^\star(x)=\min_{u}\{c(x,u)+\gamma1_\{\cF(x,u)\in A^c\}J^\star(\cF(x,u))\},\ x\in X\]
+    where \(1_{\{\dots\}}\) denotes an indicator function.
+\end{proposition}
+\begin{proof}
+    \begin{align*}
+        J^\star(x)&=\min_{\underbar{u}}\left\{c(x,\underbar{u})+\sum_{k=1}^{\tau_A-1}\gamma^kc(x(k),u(k))\right\}    \\
+        &\stackrel{\tau_A=1\implies\sum=0}{=}\min_{u(0)}\left\{c(x,u(0))+\gamma1_{\{x(1)\in A^c\}}+\min_{u[1,\dots,]}\left\{\sum_{k=1}^{\tau_A-1}\gamma^{k-1}c(x(k),u(k))\right\}\right\}\\
+        &=\min_{u(0)}\{c(x,u(0))+\gamma1_{\{x(1)\in A^c\}}J^\star(x(1))\}
+    \end{align*}
+    where \(x(1)=\cF(x,u(0))\).
+\end{proof}
+
+To formulate this as a discounted problem 
+\begin{enumerate}
+    \item modify the cost function \(c_A(x,u)=\begin{cases}
+        c(x,u) & x\notin A \\
+        0 & \in A 
+    \end{cases}\)
+    \item modify the state dynamics \(\cF_A(x,u)=\begin{cases}
+        \cF(x,u) & x\in A^c \\
+        x & x\in A
+    \end{cases}\) 
+\end{enumerate}
+
+\begin{figure}[H]\label{fig:1.07}
+    \centering
+    \includegraphics[width=.7\textwidth]{example-image}
+    \caption{Sketch: mountain car value function}
+\end{figure}
+
+Can be numerically very hard, since the value function can be quite discontinuous, but not all value functions are that bad.
+
+\dhighlight{Finite Horizon} Fix horizon \(N\geq 1\) and define 
+\[J^\star(x)=\min_{u[0,N]}\sum_{k=0}^N c(x(k),u(k)),\ x(0)=x\in X.\]
+We can connect to the optimal control problem by 
+\begin{enumerate}
+    \item enlarging the state space \(x^a(k)=(x(k),\tau(k))\), where \(\tau(k)=\tau(0)+k,\ k\geq 0\)
+    \item modify the cost function \(c^a((x,\tau),u)=\begin{cases}
+        c(x,u) & \tau \leq N\\
+        0 & \tau >N
+    \end{cases}\)
+\end{enumerate}
+Then 
+\begin{align*}
+    J^\star(x^a)=\underbrace{\min_{\underbar{u}}\sum_{k=0}^\infty c^a(x^a(k),u(k))}_{J^\star(x,\tau)},\ x^a(0)=(x,0)
+\end{align*}
+The Bellmann equation from theorem \ref{thm:1.13} now becomes 
+\begin{equation}\label{eq:bellmann_finitetime}
+    J^\star(x,\tau)=\min_u\left\{c(x,u)1_{\{\tau \leq N\}}+J^\star(\cF(x,u),\tau+1)\right\}
+\end{equation}
+
+For \(\tau>N\), it follows that \(J^\star(x,\tau)=0\).\marginnote{kind of a boundary condition}
+This gives 
+\[J^\star(x,N)=\min_{u}c(x,u)=\bar{c}(x).\]
+So, \[J^\star(x,N-1)=\min_{u}\{c(x,u)+\bar{c}(\cF(x,u))\}\]
+repeating this backwards in time yields 
+\[J^\star(x,0)=J^\star(x^a).\]
+For the policy \(\phi^\star(x,\tau)\in \argmin_{u}\{c(x,u)+J^\star(\cF(x,u),\tau+1)\},\tau \leq N\)
+and \[u^\star(k)=\phi^\star(x^\star(k),k).\]
+\markeol{05}
+
