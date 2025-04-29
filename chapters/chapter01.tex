@@ -741,13 +741,13 @@ multi-armed bandit.
 where \(\gamma\in (0,1)\) is the \dhighlight{discount factor}.
 
 \dhighlight{Shortest Path Problem:}
-
+\marginnote{This is problematic, since we might have longer path with lower cost \dots}
 Given \(A\subset X\) define \(\tau_A\coloneqq \min\{K\geq 1\mid x(k)\in A\}\).
 \[J^\star(x)=\min_u\sum_{k=0}^{\tau_A-1}\gamma^kc(x(k),u(k)),\ x(0)=x.\]
 \begin{proposition}\label{prop:1.18}
     If \(J^\star\) is finite valued, then it is the solution to 
     the dynamic programming equation in the following sense:
-    \[J^\star(x)=\min_{u}\{c(x,u)+\gamma1_\{\cF(x,u)\in A^c\}J^\star(\cF(x,u))\},\ x\in X\]
+    \[J^\star(x)=\min_{u}\{c(x,u)+\gamma1_{\{\cF(x,u)\in A^c\}}J^\star(\cF(x,u))\},\ x\in X\]
     where \(1_{\{\dots\}}\) denotes an indicator function.
 \end{proposition}
 \begin{proof}
@@ -807,4 +807,178 @@ repeating this backwards in time yields
 For the policy \(\phi^\star(x,\tau)\in \argmin_{u}\{c(x,u)+J^\star(\cF(x,u),\tau+1)\},\tau \leq N\)
 and \[u^\star(k)=\phi^\star(x^\star(k),k).\]
 \markeol{05}
+\beginlecture{06}{29.04.2025}
 
+\dhighlight{Model Predictive Control}
+
+Here, the policy is computed on-the-fly at 
+each step of the state-action trajectory as a finite horizon 
+problem. 
+The control is 
+\[u(k)=\phi^{\text{mpc}}(x^\star(k))=\phi^\star(x^\star(k),0),\]
+where \(\phi^\star\) from the finite horizon setting (\ref{eq:bellmann_finitetime})
+for \textit{small} \(N\).
+
+Consider \marginnote{Due to the finite horizon we are not optimal ...}
+\[J\mpc(x)=\sum_{k=0}^\infty c(x(k),u(k)),\ x(0)=x,u(k)=\phi\mpc(x(k)).\]
+
+\begin{proposition}\label{prop:1.19}
+    Consider \(u(k)\) from above with 
+    \[J^\star(x;0)=\min_{u[0,N-1]}\sum_{k=0}^{N-1}c(x(k),u(k))+V^0(x(N)),\]
+    where \(V^0:X\to\R^+\) satisfies the assumption from proposition \ref{prop:1.16}
+    with \(\eta=0\):
+    \[\min_{u}\{c(x,u)+V^0(\cF(x,u))\}\leq V^0(x).\]
+    Then the total cost \(J\mpc\) is finite everywhere.
+\end{proposition}
+
+\begin{proof}
+    Using an equation from proposition \ref{prop:1.15}:
+    \begin{align*}
+        V^N(x)=\min_{u[0,N-1]}\left\{\sum_{k=0}^{N-1}c(x(k),u(k))+V^0(x(k))\right\}
+    \end{align*}
+    and the definition of \(J^\star\) from above we get \(J^\star(x,0)=V^N(x)\) 
+    Proposition \ref{prop:1.16} then gives the bound\marginnote{This is also a version of a poisson inequality}
+    \begin{align*}
+        \{c(x,u)+V(\cF(x,u))\}\restrict{u=\phi\mpc(x)}&\leq V(x)=V^n(x)        
+    \end{align*}
+    From the Comparison theorem \ref{prop:1.11}, it follows that \(J\mpc\) is finite.
+\end{proof}
+
+\section{Geometry in continuous time}
+
+Consider \(x(k+1)=\cF(x(k))\), now in continuous time:
+\begin{align*}
+    \frac{d}{dt}x_t=f(x_t) & \text{ or } \frac{d}{dx} x=f(x)
+\end{align*}
+\(\mathcal{X}(t,x_0)\) is the solution to the differential equation above.
+Definition \ref{def:1.5}, \ref{def:1.6} carry over.
+\[\lim_{t\to\infty} \mathcal{X}(t,x_0)=x^e\]
+\begin{definition}\label{def:1.20}
+    A function \(V:X\to\R_0^+\) is called \dhighlight{Lyapunov function} for 
+    \dhighlight{global asymptotic stability} if the following  conditions hold:
+    \begin{itemize}
+        \item[(i)] \(V\in C^1\)
+        \item[(ii)] \(V\) is inf-compact
+        \item[(iii)] For any solution \(x\), whenever \(X_t\neq x^e\) \[\frac{d}{dt}v(x_t)<0.\]   
+    \end{itemize}
+\end{definition}
+
+If \(x_t=x^e\), we have \(V(x_{t+s})=V(x^e)\) for all \(s\geq 0\), so 
+\(\frac{d}{dt}V(x^e)=0\).
+
+If we look back at the proof of proposition \ref{prop:1.10} and proposition \ref{prop:1.11} (iii),
+we can see that these also carry over to the continuous case. So we get 
+\begin{proposition}[Extension of prop \ref{prop:1.11} (iii)]\label{prop:1.21}\marginnote{Since we did not exploit the step-wise nature previously}
+    If there exists a Lyapunov function after definition \(V\) \ref{def:1.20},
+    then the equilibrium \(x^e\) is globally asymptotically stable.  
+\end{proposition}  
+
+The continuous version of Poisson's inequality is then 
+\begin{equation}\label{eq:poisson_con}
+    \langle \nabla V(x),f(x) \rangle \leq -c(x)+\eta
+\end{equation}
+using the chain rule we get 
+\[\frac{d}{dt} V(x)\leq -c(x)+\eta \]
+further observing \[0\leq V(x_T)=V(x_0)+\int_0^T \frac{d}{dt}V(X_t)dt\leq V(x_0)+T\eta-\int_0^T c(x_t)dt\]
+we have shown
+\begin{proposition}[Continuous Comparison theorem]\label{prop:1.22}
+    If (\ref{eq:poisson_con}) holds for non-negative \(c,V,\eta\), then we have 
+    \begin{equation}\label{eq:comp_thm_cont}
+        V(X_t)+\int_0^Tc(x_t)dt\leq V(x)+T\eta, \ x_0=x\in X,T>0 
+    \end{equation}
+    If \(\eta=0\)
+    \[\int_0^\infty c(x_t)dt\leq V(x)\]
+    the total cost is bounded.
+\end{proposition}
+
+\subsection{Optimal control in continuous time} 
+
+\[\frac{d}{dt}x=f(x,u)\]
+with total cost for \(\underbar{u}=u[0,\infty)\)
+\[J(\underbar{u})=\int_0^\infty c(x_t,u_t)dt.\]
+As before, we minimize over \(u\) and want \(J\) to be finite.
+We assume \[f(x^e,u^e)=0\] for some \(u^e\) and 
+\[c(x^e,u^e)=0\]
+which yields that \(J\) is finite. As before 
+\[J^\star(x)=\min_u \int_0^\infty c(x_t,u_t)dt,\ x_0=x\in X.\]
+
+We extend the Bellmann equation to continuous times 
+\begin{align*}
+    J^\star(x)&=\min_{u[0,\infty]}\left[\int_0^{t_m} c(x_t,u_t)dt+\int_{t_m}^\infty c(x_t,u_t)dt\right]\\ % TODO: 1 equation
+    &= \min_{u[0,t_m]}\left[\int_0^{t_m} c(x_t,u_t)dt+\underbrace{\min_{u[t_m,\infty)}\int_{t_m}^\infty c(x_t,u_t)dt}_{J^\star(x_{t_m})}\right]
+\end{align*}
+
+Same principle of optimality: What happens for \(t_m\downarrow 0\). We assume 
+\(J^\star\in C^1\)\marginnote{this is a strong assumption! In principle we would need to talk about viscosity solutions ... Even weak solutions are not enough}
+and write \(\Delta x=x_{t_m}-x_0=x_m-x\). We now use Taylor on the above expression 
+\begin{align*}
+    J^\star(x)&= \min_{u[0,t_m]}\left\{c(x_t,u_t)t_m+J^\star(x)+\nabla J^\star(x)\cdot \Delta x + o(t_m)  \right\}\\
+    \implies 0&=\min_{u[0,t_m]}\{c(x_t,u_t)\underbrace{\frac{t_m}{t_m}}_{\to 0}+\nabla J^\star(x)\underbrace{\frac{\Delta x}{t_m}}_{\frac{d}{dt}\restrict{t=0}=f(x_0,u_0)}\} + \underbrace{o(1)}_{\to 0} \\
+    \implies 0&=\min_{u}\left[c(x,u)+\nabla J^\star(x)\cdot f(x_0,u_0)\right]
+\end{align*}
+
+\begin{theorem}\label{thm:1.23}
+    If the value function \(J^\star\) has continuous derivatives, then it 
+    satisfies the \dhighlight{Hamilton-Jacobi-Bellmann equation}
+    \begin{equation}\label{eq:hamilton_jacobi_bellmann}
+        0=\min_{u}\left[c(x,u)+\nabla J^\star(x)\cdot f(x_0,u_0)\right]
+    \end{equation}
+\end{theorem}
+
+The term to minimize  has an interpretation 
+as an Hamiltonian 
+\[H(x,p,u)=c(x,u)+p^\intercal f(x,u).\]
+One can show 
+\begin{theorem}\label{thm:1.24}
+    Suppose that an optimal state-action pair exists 
+    and that \(J^\star\in C^1\). Then \(u_t^\star\) must minimize
+    for each \(t\) 
+    \begin{align*}
+        \min_u H(x_t^\star,p_t^\star,u)=H(x_t^\star,p_t^\star,u_t^\star)
+    \end{align*}
+    with \(p_t^\star=\nabla_x J^\star(x_t^\star)\).
+\end{theorem}
+\begin{remark}
+    Relaxing away from \(\nabla J^\star\) or \(\nabla J\) can have 
+    theoretical and computational advantages.
+\end{remark}
+
+\subsection{Linear quadratic regulator revisited (once more)}
+
+\begin{align*}
+    \frac{d}{dt}x&=Fx+Gu,\ x(0)=x_0\\
+    c(x,u)&=x^\intercal S x + u^\intercal R u 
+\end{align*}
+
+\textit{everything} we observed so far carries over, assuming \(J^\star\) is finite, we 
+have 
+\[J^\star(x)=x^\intercal M^\star x\]
+the HSB (\ref{eq:hamilton_jacobi_bellmann}) gives 
+\begin{align*}
+    \phi^\star(x)&=\argmin_u \left\{x^\intercal S x+ u^\intercal R u+ \left[2 M^\star x\right]^\intercal \left[F_x+ Gu\right] \right\}\\
+    &=\argmin_u \left\{u^\intercal R u+2 x^\intercal M^\star Gu \right\}
+\end{align*}
+
+So, 
+\begin{align*}
+    0=\nabla_u\left\{u^\intercal R u+2 x^\intercal M^\star Gu \right\}\restrict{u=\phi^\star(x)}
+\end{align*}
+and we get 
+\[\phi^\star(x)=-R^{-1}G^\intercal M^\star x\]
+and 
+\[\frac{d}{dt}x^\star=\left[F-GR^{-1}G^\intercal M^\star\right]x^\star.\]
+HSB (\ref{eq:hamilton_jacobi_bellmann}) further gives 
+\begin{align*}
+    0&=\{x^\intercal S x+ u^\intercal R u+[2M^\star x]^\intercal \left[Fx+Gu\right]\}\restrict{u=\phi^\star(x)}\\
+    &x^\intercal \left\{S+M^\star GR^{-1}\Id G^\intercal M^\star \right\}x+x^\intercal\left\{2M^\star F+2M^\star G R^{-1}G^\intercal M^\star \right\}x
+\end{align*}
+using \(2x^\intercal M^\star Fx=x^\intercal \left[M^\star F + F^\intercal M^\star\right]\)
+we get 
+\begin{align*}
+    =x^\intercal \left\{S+M^\star F+ F^\intercal M^\star-M^\star GR^{-1}G^\intercal M^\star\right\}x % TODO FIX:
+\end{align*}
+\[\left\{S+M^\star F+ F^\intercal M^\star-M^\star GR^{-1}G^\intercal M^\star\right\}\]
+holds for any \(x\) and is symmetric, so it follows \(M^\star\) is a positive definite solution to the 
+algebraic Riccati equation 
+\[0=S+M^\star F+ F^\intercal M^\star- M^\star GR^{-1}G^\intercal M^\star\]
+\markeol{06}
