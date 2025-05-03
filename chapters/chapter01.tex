@@ -483,6 +483,19 @@ We approximate \(J^\star\) by a sequence of \(V^k\) given an initial value funct
 \[V^{k+1}(x)=\min_{u}\{c(x,u)+V^k(\cF(x,u))\}, x\in X,\ k\geq 0\]
 This is called \dhighlight{value iteration} often shortened to VI.
 
+\begin{algorithm}[H]
+    \caption{Value iteration}
+    \textbf{Input:} Start with an initial value function \(V^0\)\\
+    \textbf{Output:} Estimates \(V^{k+1}\)
+    \begin{algorithmic}
+    \State \(n=0\)
+    \While{\textit{not good enough}}
+        \State Value function improvement to obtain next value function
+            \[V^{k+1}(x)=\min_{u}\{c(x,u)+V^k(\cF(x,u))\}, x\in X,\ k\geq 0\]
+    \EndWhile
+    \end{algorithmic}
+\end{algorithm}
+
 \begin{proposition}\label{prop:1.15}
     Let \(V^0\) be chosen with non-negative entries and \(V^0(x^e)=0\). Further,
     we assume
@@ -516,9 +529,9 @@ This is called \dhighlight{value iteration} often shortened to VI.
 
 VI provides a sequence of policies \(\phi^n\)
 \[\phi^n(x)\in\argmin_{u}\{c(x,u)+V^n(\cF(x,u))\}.\]
-If we assume that \(V^0\) is non-negative and satisfies for some 
-\(\eta\geq 0\) poisson's inequality(\ref{def:1.9})
-\[V^0(\cF(x,u))\leq V^0(x)-c(x,\varphi^0(x))+\eta,\ x\in X\]
+If we assume that \(V^0\) is non-negative and satisfies poisson's inequality(\ref{def:1.9}) for some 
+\(\eta\geq 0\)
+\[V^0(\cF(x,u))\leq V^0(x)-c(x,\phi^0(x))+\eta,\ x\in X\]
 then we get the following statement 
 \begin{proposition}\label{prop:1.16}
     Suppose that \(V^0\) is non-negative and it holds 
@@ -543,7 +556,7 @@ then we get the following statement
         &=V^{n+1}(x)=V^n(x)+B^n(x)\\
         &\leq V^n(x)+\eta_n 
     \end{align*}
-    For non-increasing,we consider 
+    To show that the \(\eta\) are non-increasing, we consider 
     \begin{align*}
         V^1(x)=\{c(x,u)+V^0(\cF(x,u))\}\restrict{u=\phi^0(x)}\stackrel{\text{Assumption}}{\leq} V^0(x)+\eta
     \end{align*}
@@ -560,7 +573,7 @@ then we get the following statement
     Hence, \(\eta_n=\sup_x B^n(x)\leq \eta_{n-1}\).
 \end{proof}
 
-%TODO: Part of te proof?
+%TODO: Part of the proof?
 Now consider \(\eta=0\), so for each \(n\)
 \begin{align*}
     \{c(x,u)+V^n(\cF(x,u))\}\restrict{u=\phi^n(x)}\leq V^n(x)
@@ -580,7 +593,7 @@ Start with an initial policy \(\phi^0,n=0\)
     \item Compute the total cost for the policy \(\phi^n\), this is called policy evaluation
     \[J^n(x)=\sum_{k=0}^\infty c(x(k),u(k)),\ u(k)=\phi^n(x(k))\forall x\in X\]
     \item perform \dhighlight{policy improvement} to obtain the next policy 
-    \[\phi^{n-1}(x)\in \argmin_{u}\{c(x,u)+J^n(\cF(x,u))\},\ x\in X\]
+    \[\phi^{n+1}(x)\in \argmin_{u}\{c(x,u)+J^n(\cF(x,u))\},\ x\in X\]
     \item while \textit{not good enough}
 \end{itemize}
 
@@ -590,21 +603,18 @@ This is sometimes also called Howard's algorithm.
     The first step is some linearization and the second is the update. Like a generalization of Newton's method    
 \end{remark}
 
-% TODO
 \begin{algorithm}[H]
-    \caption{This will be fixed soon}
-    \textbf{Input:} $A\in\R^{m\times n},m\geq n$\\
-    \textbf{Output:} $R$ von der $QR$-Zerlegung ($A$ wird zerstört ``in place'')
+    \caption{Policy iteration}
+    \textbf{Input:} Start with an initial policy \(\phi^0\)\\
+    \textbf{Output:} Estimates \(J^n(x), \phi^{n+1}(x)\)
     \begin{algorithmic}
-    \For{$j=1,\dots, n$}
-        \For{$i=m,m-1,\dots, j+1$}
-            \State Berechne $c,s$
-            \State $A[i-1:i,j:n]=\begin{bmatrix}
-                c & s \\
-                -s & c 
-            \end{bmatrix}^t A[i-1:i,j:n]$
-        \EndFor
-    \EndFor
+    \State \(n=0\)
+    \While{\textit{not good enough}}
+        \State Compute the total cost for the policy \(\phi^n\), this is called policy evaluation
+            \[J^n(x)=\sum_{k=0}^\infty c(x(k),u(k)),\ u(k)=\phi^n(x(k))\ \forall x\in X\]
+        \State perform \dhighlight{policy improvement} to obtain the next policy 
+            \[\phi^{n+1}(x)\in \argmin_{u}\{c(x,u)+J^n(\cF(x,u))\},\ x\in X\]
+    \EndWhile
     \end{algorithmic}
 \end{algorithm}
 
@@ -657,7 +667,7 @@ one modifies the trajectories, not strictly follows \(\phi^n\).
 
 \(u(k)=\hat{\phi}(x(k),\zeta(k))\), where \(\zeta(k)\) is some form of noise.
 Typically 
-\begin{enumerate}\marginnote{this is also sometimes called off-polciy and on-policy}
+\begin{enumerate}\marginnote{this is also sometimes called off-policy and on-policy}
     \item \(\hat{\phi}(x(k),\zeta(k))=\phi^\theta(k)\) for \textit{most} \(k\)
     \item Choose action to explore the state-action space (e.g. randomly) the other times
 \end{enumerate}
@@ -703,7 +713,7 @@ Given \(Q^\theta\) we have \(\phi^\theta(x)\in\argmin_{u}Q^\theta(x,u),\ x\in X\
 Policy iteration for \(Q\)-functions:
 \begin{enumerate}
     \item obtain \(\theta^n\) to get an approximation of \(Q^{\theta^n}\)\marginnote{Approximation since we do this sample-based in RL}
-          where \(Q^{\theta^n}(x,u)=c(x,u)+Q^{\theta^n}(x^+,u^+),\ x^+=\cF(x,u),u^+\phi^n(x^+)\)
+          where \(Q^{\theta^n}(x,u)=c(x,u)+Q^{\theta^n}(x^+,u^+),\ x^+=\cF(x,u),u^+=\phi^n(x^+)\)
     \item define new policy \(\phi^{n+1}(x)\coloneqq \phi^{\theta^n}\) 
 \end{enumerate}
 
@@ -719,7 +729,7 @@ The temporal difference / Bellmann error
 \begin{align*}
     D_{k+1}(Q^\theta)&=-Q^\theta(x(k),u(k))+c(x(k),u(k))+Q^\theta(x(k+1),u(k+1))
 \end{align*} 
-If \(Q^\theta=Q^\star\) then \(D_k+1(Q^\theta)=0\ \forall k\). In \(Q\)-learning 
+If \(Q^\theta=Q^\star\) then \(D_{k+1}(Q^\theta)=0\ \forall k\). In \(Q\)-learning 
 algorithms, one chooses \(\theta^n\) such that \(D_{k+1}(Q^{\theta^n})\)
 is small in a suitable fashion. So we minimize \(\theta\) to achieve this, i.e. 
 \begin{align*}
@@ -742,7 +752,7 @@ where \(\gamma\in (0,1)\) is the \dhighlight{discount factor}.
 
 \dhighlight{Shortest Path Problem:}
 \marginnote{This is problematic, since we might have longer path with lower cost \dots}
-Given \(A\subset X\) define \(\tau_A\coloneqq \min\{K\geq 1\mid x(k)\in A\}\).
+Given \(A\subset X\) define \(\tau_A\coloneqq \min\{k\geq 1\mid x(k)\in A\}\).
 \[J^\star(x)=\min_u\sum_{k=0}^{\tau_A-1}\gamma^kc(x(k),u(k)),\ x(0)=x.\]
 \begin{proposition}\label{prop:1.18}
     If \(J^\star\) is finite valued, then it is the solution to 
@@ -750,7 +760,7 @@ Given \(A\subset X\) define \(\tau_A\coloneqq \min\{K\geq 1\mid x(k)\in A\}\).
     \[J^\star(x)=\min_{u}\{c(x,u)+\gamma1_{\{\cF(x,u)\in A^c\}}J^\star(\cF(x,u))\},\ x\in X\]
     where \(1_{\{\dots\}}\) denotes an indicator function.
 \end{proposition}
-\begin{proof}
+\begin{proof}\marginnote{\(c(x, u(0))\) since we're extracting the first element of the sum}
     \begin{align*}
         J^\star(x)&=\min_{\underbar{u}}\left\{c(x,\underbar{u})+\sum_{k=1}^{\tau_A-1}\gamma^kc(x(k),u(k))\right\}    \\
         &\stackrel{\tau_A=1\implies\sum=0}{=}\min_{u(0)}\left\{c(x,u(0))+\gamma1_{\{x(1)\in A^c\}}+\min_{u[1,\dots,]}\left\{\sum_{k=1}^{\tau_A-1}\gamma^{k-1}c(x(k),u(k))\right\}\right\}\\
@@ -762,7 +772,7 @@ Given \(A\subset X\) define \(\tau_A\coloneqq \min\{K\geq 1\mid x(k)\in A\}\).
 To formulate this as a discounted problem 
 \begin{enumerate}
     \item modify the cost function \(c_A(x,u)=\begin{cases}
-        c(x,u) & x\notin A \\
+        c(x,u) & x\in A^c \\
         0 & \in A 
     \end{cases}\)
     \item modify the state dynamics \(\cF_A(x,u)=\begin{cases}
