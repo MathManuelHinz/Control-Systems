@@ -1,0 +1,165 @@
+\chapter{ODE methods for algorithm design}
+\beginlecture{07}{06.05.2025}
+
+\section{ODE methods for algorithm design} % TODO: Fix
+
+Four steps:
+\begin{itemize}
+    \item Formulate the algorithmic goal as the root finding problem 
+        \[\bar{f}(\theta^\star)=0\]
+    \item if necessary, refine the design of \(\bar{f}\) to ensure that 
+          the associated ODE is \highlight{globally asymptotically stable} \marginnote{\(\theta\) for descrete settings, \(\vartheta\) for continuous settings. Both do the same job}
+          \[\frac{d}{dt}\vartheta=\bar{f}(\vartheta)\] 
+    \item  Is an \highlight{Euler-approximation} appropriate? \marginnote{\(\theta_{n+1}\) is the next iterate, not the next time step!}
+          \begin{equation}\label{eq:euler}\theta_{n+1}=\theta_n+\alpha_{n+1}\bar{f}(\theta_n)\end{equation}
+    \item Design an algorithm to approximate (\ref{eq:euler}) based on whatever 
+          observation is available.
+
+\end{itemize}
+
+\begin{remark}
+    The idea is to transfer the global stability from the ODE to the algorithm.
+\end{remark}
+
+\dhighlight{Goal:} Construct a vector field \(f\) such that \(\vartheta_t\)
+converges to the \highlight{target} \(\theta^\star\in \R^d\), where 
+\(\theta^\star\) is an equilibrium \[f(\theta^\star)=0.\]
+
+In ODE theory one uses so called \dhighlight{Picard-Iteration}
+\begin{equation}\label{eq:picard-iterations}
+    \vartheta_t^{n+1}1=\theta_0+\int_0^t f(\vartheta_\tau^n)d\tau,\ 0\leq t\leq T
+\end{equation}
+based on 
+\begin{equation}\label{eq:fundamental_theorem}
+    \vartheta_0+\int_0^t f(\vartheta_\tau)d\tau,\ 0 \leq t\leq T.
+\end{equation}
+\begin{proposition}\label{prop:25} % TODO: rename
+    Suppose that the function \(f\) is globally Lipschitz continuous:
+    \[\exists L >0: \forall x,y\in \R^d:\ \Vert f(x)-f(y)\Vert \leq L\Vert x -y \Vert\]    
+    Then for each \(\theta_0\) there exists a unique solution to (\ref{eq:fundamental_theorem}).
+    in the finite time horizon.
+    Moreover, successive approximation is uniformly convergent:
+    \[\lim_{n\to\infty}\max_{0\leq t\leq T}\Vert \vartheta_t^n-\vartheta_t=0\]
+\end{proposition}
+
+\begin{proposition}[Gruönwall-Bellman-inequality]\label{prop:26}
+    Let \(\alpha,\beta\) and \(z\) be non-negative functions defined on 
+    \([0,T],\ T>0\). Assume that \(\beta,z\) are continuous and that 
+    \[z_t\leq \alpha_t+\int_0^t\beta_s z_sds,\ 0\leq t\leq T\]
+    Then it holds
+    \begin{enumerate}
+        \item[(i)] \(z_t\leq \alpha_t+\int_0^t \alpha_s \beta_s \exp\left(\int_s^t B_r dr\right)ds\)
+        \item[(ii)] if in addition the function \(\alpha\) is non-decreasing, then \[z_t\leq \alpha_t\exp\left(\int_0^t B_sds\right),\ 0\leq t\leq T\] 
+    \end{enumerate} 
+\end{proposition}
+
+\begin{proof}
+    Both proofs can be found in any textbook on ODEs. 
+    The second one is also found in \cite{Meyn_2022}.
+\end{proof}
+
+\begin{proposition}\label{prop:27}\marginnote{Not that nice, but at least a bound \dots}
+    Consider \(\frac{d}{dt}\vartheta=f(\vartheta),\ \vartheta_0=\theta_0\) with \(f\) globally Lipschitz. Then 
+    \begin{enumerate}
+        \item[(i)] There is a constant \(B_f\) depending only on \(f\) such that, with \(t\geq 0\)
+                   \begin{eqnarray}\Vert \vartheta_t\Vert \leq \left(B_f+\Vert \vartheta_\Vert\right)e^{Lt}-B_f\\
+                    \Vert \vartheta_t-\vartheta_0\Vert \vert  B_f+L\Vert \vartheta_0\Vert \vert t e^{lt}
+                   \end{eqnarray}
+        \item[(ii)] If there is an equilibrium \(\theta^\star\), then for each initial condition:
+                   \begin{equation}
+                        \Vert \vartheta_t-\theta^\star\Vert \leq \Vert \vartheta_0-\theta^\star\Vert e^{Lt}
+                   \end{equation}
+    \end{enumerate}
+\end{proposition}
+
+\begin{proof}
+    \highlight{(ii):} use \ref{eq:fundamental_theorem} to get 
+    \[\vartheta_t-\theta^\star=\vartheta_0-\theta^\star+\int_0^tf(\vartheta_\tau)d\tau\]
+    Since \(f(\theta_\star)=0\), we see 
+    \begin{align*}
+        \Vert f(\vartheta_\tau)\Vert &= \Vert f(\vartheta_\tau)-f(\theta^\star)\Vert\\
+        &\leq L\underbrace{\Vert \vartheta_\tau-\theta^\star\Vert}_{\eqqcolon z_\tau}
+    \end{align*}
+    So 
+    \begin{align*}
+        z_t&\leq z_0+L \int_0^t z_t d\tau.
+    \end{align*}
+    Using proposition \ref{prop:26} (ii) with \(\beta_t\equiv L,\alpha_t\equiv z_0\)
+    we get \[\Vert \vartheta_t-\theta^\star\Vert\leq \Vert \vartheta_t-\theta_0\Vert\exp(Lt)\]
+    
+    \highlight{(i):} take any \(\bar{\theta}\in\R^d\) and use the Lipschitz continuity 
+    \begin{align*}
+        \Vert f(\theta)\Vert &\leq \Vert f(\theta)-f(\bar{f})\Vert +\Vert f(\bar{\theta})\Vert \\
+        &\leq L\Vert \theta-\bar{\theta}\Vert + \Vert f(\bar{\theta})\Vert \\
+        &\leq L\Vert \theta\Vert + L\Vert \bar{\theta}\Vert + \Vert f(\bar\theta)\Vert.
+    \end{align*} 
+    For any fixed \(\bar{\theta}\), define \(B_f=\Vert \bar{\theta}\Vert + \Vert f(\bar\theta)\Vert/L\)
+    which gives 
+    \begin{align*}
+        \Vert f(\theta)\Vert \leq L \left[\Vert \theta\Vert + B_f\right],\ \theta\in\R^d
+    \end{align*}
+    using (\ref{eq:fundamental_theorem})
+    \begin{align*}
+        \Vert \vartheta_t\Vert +B_f &\leq \Vert \vartheta_0\Vert + B_f +\underbrace{L}_\beta\int_0^t \left[\underbrace{\Vert\vartheta_\tau+ B_f}_{z_\tau}\right]d\tau\\
+        &\leq \left[\Vert \vartheta_0\Vert +B_f\right]\exp(Lt) 
+    \end{align*}
+    where the last step follows by the same trick as in (ii), i.e. by using Gruönwall.
+\end{proof}
+
+\subsection{Euler's method once more}
+\marginnote{Explict Euler, implicit Euler is nicer to analyze}
+\begin{equation}\label{eq:euler_v2}
+    \frac{\hat{\vartheta}_{t_{n+1}}-\hat{\vartheta}_{t_{n}}}{\alpha_{n+1}} = f(\hat{\vartheta}_{t_n}),\ \hat{\vartheta}_0=\vartheta_0=\theta_0
+\end{equation}
+or \[\hat{\vartheta}_{t_{n+1}}= \hat{\vartheta}_{t_{n}}+\alpha_{n+1} f(\hat{\vartheta}_{t_n})\]
+It can be shown for \(f\) globally Lipschitz
+\begin{equation}
+    \max_{0\leq t\leq T}\Vert \hat{\vartheta}_t-\vartheta_t\Vert \leq \underbrace{K(L,T)}_{\text{exponential in }L,T}\max\{\alpha_k\mid t_k< T\}
+\end{equation} 
+
+\subsection{Optimization}
+
+\dhighlight{Goal:} Find, for some loss function \(\Gamma:\R^d\to \R_+\),
+\begin{equation}
+    \theta^\star\in\argmin \Gamma(\theta).
+\end{equation} 
+Use steepest-descent, formulated as ODE 
+\begin{equation}\label{eq:gradient_flow}\frac{d}{dt}\vartheta=-\nabla_\theta \Gamma(\theta)\end{equation}
+so called \dhighlight{gradient flow}.
+\[\nabla \Gamma(\theta0)\perp \{\theta\in\R^d\mid \Gamma(\theta)=\Gamma(\theta_0)\}\eqqcolon S_{\Gamma}(\theta_0)\]
+The gradient flow steers into the interior of \(S_{\Gamma}(\theta_0)\).
+
+\begin{definition}\label{def:28}
+    \begin{enumerate}
+        \item[(i)] A set \(S\subset \R^d\) is \dhighlight{convex} if it contains all line segments with endpoints in \(S\)
+        \item[(ii)] A function \(\Gamma:S\to\R\) with \(S\) convex, is called \dhighlight{convex} 
+                    if for any \(\theta^0,\theta^1\in S\) and \(\rho\in (0,1)\) 
+                    \[\Gamma((1-\rho)\theta^0+\rho\theta^1)\leq (1-\rho)\Gamma(\theta^0)+\rho\Gamma(\theta^1)\]
+                    \(\Gamma\) is \dhighlight{strictly convex} if this inequality is strict whenever \(\theta^0\neq\theta^1\)
+        \item[(iii)] If \(\Gamma\) is differentiable, then it is called \dhighlight{strongly convex} if for \(\delta_0>0\)
+                     \[\langle\nabla \Gamma(\theta)-\nabla\Gamma(\theta^0),\theta-\theta^0\rangle\geq \delta_0 \Vert \theta-\theta_0\Vert^2,\ \forall \theta,\theta^0\in S\]           
+    \end{enumerate}
+\end{definition}
+
+From numerical optimization we know:
+\begin{theorem}\label{thm:29}
+    Suppose that \(\Gamma:\R^d\to\R\) is convex. Then for given \(\theta^0\in R^d\)
+    \begin{enumerate}
+        \item[(i)] if \(\theta^0\) is a local minima, then it is also \dhighlight{a global minimum}
+        \item[(ii)] if \(\Gamma\) is differentiable at \(\theta^0\), with \(\nabla\Gamma(\theta)=0\), then \(\theta^0\) is \dhighlight{a global minimum}
+        \item[(iii)] if either(i) or (ii) hold, and if \(\Gamma\) is strictly convex, then \(\theta^0\) is the \dhighlight{unique global minimum }   
+    \end{enumerate}
+\end{theorem}
+
+\begin{proposition}\label{prop:30}
+    Suppose that \(\Gamma\) is continuously differentiable, convex and coercive,
+    with unique minimizer \(\theta^\star\). Then the gradient flow 
+    \[\frac{d}{dt}\vartheta=-\nabla\Gamma(\vartheta)\]
+    is globally asymptotically stable, with unique equilibrium
+    \(\theta^\star\). 
+    
+    If \(\Gamma\) is strongly convex, then the rate of convergence is exponential
+    \[\Vert \vartheta_t-\theta^\star\Vert\leq e^{-\delta_0 t}\Vert \vartheta_0-\theta^\star\Vert.\]
+\end{proposition}
+% TODO: Fix Vert missing?
+\markeol{07}
