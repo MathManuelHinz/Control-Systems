@@ -159,7 +159,180 @@ From numerical optimization we know:
     \(\theta^\star\). 
     
     If \(\Gamma\) is strongly convex, then the rate of convergence is exponential
-    \[\Vert \vartheta_t-\theta^\star\Vert\leq e^{-\delta_0 t}\Vert \vartheta_0-\theta^\star\Vert.\]
+    \[\Vert \vartheta_t-\theta^\star\Vert\leq e^{-\delta_0 t}\Vert \vartheta_0-\theta^\star\Vert,\]
+    where \(\delta_0\) comes from theorem \ref{thm:29}.
 \end{proposition}
 % TODO: Fix Vert missing?
 \markeol{07}
+\beginlecture{08}{08.05.2025}
+\begin{proof}
+    We use as Lyapunov function \(V(\theta)=\frac{1}{2}\Vert \theta-\theta^\star\Vert^2\). From the chain rule
+    \begin{align*}
+        \frac{d}{dt}V(\vartheta_t)=-\nabla_\theta\Gamma(\vartheta_t)^\intercal\left[\vartheta_t-\theta^\star\right]
+    \end{align*}
+    By convexity we get the following bound 
+    \[\Gamma(\theta^\star)\geq \Gamma(\vartheta_t)+\nabla_\theta\Gamma(\vartheta_t)^\intercal\left[\theta^\star-\vartheta_t\right]\]
+    using the support condition this becomes 
+    \begin{align*}
+        \frac{d}{dt}V(\vartheta_t)\leq \Gamma(\theta^\star)-\Gamma(\vartheta_t)\leq 0
+    \end{align*}
+    since \(\theta^\star\) is the minimum. The strict inequality \((<0)\) holds when \(\vartheta_t\neq \theta^\star\).
+    \(V\) fulfills definition \ref{def:1.20} and proposition \ref{prop:1.21} gives 
+    global asymptotic stability. \marginnote{Coercive, therefore inf-compact}
+
+    Under strict convexity 
+    \begin{align*}
+            \frac{d}{dt}V(\vartheta_t)&=-\left[\nabla_\theta \Gamma(\vartheta_t)-\underbrace{\nabla_\theta\Gamma(\theta^\star)}_{=0}\right]^\intercal \left[\vartheta_t-\theta^\star\right]\\
+            &\stackrel{\text{strong convexity}}{\leq} -\delta_0 \Vert \vartheta_t-\theta^\star\Vert^2=-2\delta_0V(\vartheta_t)
+    \end{align*}
+    This implies \(V(\vartheta_t)\leq V(\vartheta_0)\exp(-2\delta_0t) \forall t\) by integrating.
+\end{proof}
+
+\begin{theorem}\label{thm:31}
+    If the Polyak-Lojasiewiez % TODOFIX 
+    (PL) inequality \marginnote{Used in stochastic gradient descent}
+    \begin{equation}\label{eq:PL}
+        \frac{1}{2}\Vert \nabla\Gamma (\theta)\Vert^2\geq \mu |\Gamma(\theta)-\Gamma(\theta^\star)|  
+    \end{equation}
+    holds then the gradient flow satisfies for each initial \(\vartheta_0\) 
+    \[\Gamma(\vartheta_t)-\Gamma^\star\leq e^{-\mu t}(\gamma(\vartheta_0)-\Gamma^\star).\]
+    If in addition \(\Gamma\) is coercive, then the solutions are bounded and 
+    any limit point \(\theta_\infty\) of \(\{\vartheta_t\}\) is an optimizer 
+    \[\Gamma(\theta_\infty)=\Gamma^\star\]
+\end{theorem}
+
+\begin{proof}
+    We use \(V(\theta)=\frac{1}{2}\vert \Gamma(\theta)-\Gamma^\star\vert\)
+    for the Lyapunov function. 
+    \begin{align*}
+        \implies \frac{d}{dt}V(\vartheta_t)&=\frac{1}{2}\nabla_\theta\Gamma(\vartheta_t)^\intercal \frac{d}{dt}\vartheta_t\\
+        &=-\frac{1}{2}\Vert \nabla\Gamma(\vartheta_t)\Vert^2\leq -\mu V(\vartheta_t)
+    \end{align*}
+    This implies using the same technique as in the previous proof
+    \begin{align*}
+        \frac{1}{2}\left[\Gamma(\vartheta_t)-\Gamma^\star\right]&=V(\vartheta_t)\leq e^{-\mu t}V(\vartheta_0)\\
+        &= e^{-\mu t}\frac{1}{2}\left[\Gamma(\vartheta_0)-\Gamma^\star\right]
+    \end{align*}
+    If \(\Gamma\) is coercive, then trajectories of \(\vartheta\) evolve
+    in the compact set \(S=\{\theta\mid V(\theta)\leq V(\vartheta_0)\}\). If 
+    \(theta_\infty\) is a limit point \(\theta_\infty=\lim_{n\to\infty}\vartheta_{t_n}\)
+    for \(t_n\to\infty\).
+    Using the continuity of the loss function, this implies optimality:
+    \[\Gamma(\theta_\infty)=\lim_{n\to\infty}\Gamma(\vartheta_{t_n})=\Gamma^\star\qedhere\] 
+\end{proof}
+Consider the Euler method for the gradient flow:
+\begin{equation}\label{eq:euler-gradient-flow}
+    \theta_{k+1}=\theta_k-\alpha \nabla\Gamma(\theta_k)
+\end{equation}
+\begin{theorem}\label{thm:32}
+    Suppose that \(\Gamma\) satisfies
+    \begin{enumerate}\marginnote{These are more general version of global Lipschitz and convexity}
+        \item[(i)] the \(L-\)smooth inequality (LSI) \[\Gamma(\theta')\leq\Gamma(\theta)+[\theta'-\theta]^\intercal\nabla\Gamma(\theta)+\frac{1}{2}L\Vert \theta'-\theta\Vert^2\]
+        \item[(ii)] the PLE \ref{eq:PL}  
+    \end{enumerate}
+    Then it holds for \(\alpha\leq \frac{1}{2}\)
+    \[\Gamma(\theta_{k})-\Gamma^\star\leq (1-\alpha\mu)^k[\Gamma(\theta_0)-\Gamma^\star].\]
+\end{theorem}
+
+\begin{proof}
+    \begin{align*}
+        \Gamma(\theta_{k+1}-\Gamma(\theta_k))& \stackrel{\text{LSI}}{\leq} [\theta_{k+1}-\theta_k]^\intercal\nabla\Gamma(\theta_k)+\frac{1}{2}L\Vert\theta_{k+1}-\theta_k \Vert^2\\
+        &\stackrel{\ref{eq:euler-gradient-flow}}{=}-\alpha\Vert \nabla\Gamma(\theta_k)\Vert^2+\frac{1}{2}L\alpha^2\Vert \nabla\Gamma(\theta_k)\Vert^2\\
+        &=(-\alpha+\frac{1}{2}L\alpha^2)\Vert \nabla\Gamma(\theta_k)\Vert^2
+    \end{align*}
+    If \(\alpha\leq \frac{1}{L}\) then \((-\alpha+\frac{1}{2}L\alpha^2)\leq \frac{1}{2}\alpha\)
+    
+    \begin{align*}
+        &\leq -\frac{1}{2}\alpha \Vert \nabla\Gamma(\theta_k)\Vert^2\\
+        &\stackrel{\text{LSI}}{\leq}-\alpha\mu\vert \Gamma(\theta_k)-\Gamma^\star\vert     
+    \end{align*}
+    and therefore 
+    \[\Gamma(\theta_{k+1})-\Gamma^\star\leq (1-\alpha\mu)(\Gamma(\theta_k)-\Gamma^\star)\]
+    after iterating \(k-1\) times  we obtain the result.
+\end{proof}
+
+\begin{lemma}\label{lem:33}
+    Suppose that \(\nabla\Gamma\) is globally Lipschitz 
+    \[\Vert \nabla\Gamma(\theta')-\nabla\Gamma(\theta)\Vert\leq L \Vert \theta'-\theta\Vert,\ \forall \theta,\theta'\in S\]
+    Then \begin{enumerate}
+        \item[(i)]  \(\vert\langle \nabla\Gamma(\theta')-\nabla\Gamma(\theta),\theta'-\theta\rangle\vert\leq L \Vert \theta'-\theta\Vert^2\)
+        \item[(ii)] if \(S\) is convex, then \(\Gamma\) is \(L\)-smooth 
+    \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+    \highlight{(i)}
+    \begin{align*}
+        \vert\langle \nabla\Gamma(\theta')-\nabla\Gamma(\theta),\theta'-\theta\rangle\vert & \leq \Vert \nabla\Gamma(\theta')-\nabla\Gamma(\theta)\Vert \Vert \theta'-\theta\Vert\\
+        &\leq L \Vert \theta'-\theta\Vert
+    \end{align*}
+    \marginnote{\(\theta^t\) in \(S\), since \(S\) is convex}
+    \highlight{(ii)} for \(\theta',\theta\in S\) denote \(S\ni\theta^t\coloneqq\theta+t(\theta'-\theta)\)
+    and \(\xi^t=\Gamma(\theta^t)\).
+    \begin{align*}
+        \frac{d}{dt}\xi^t&=\langle\nabla\Gamma(\theta^t),\theta'-\theta \rangle\\
+        \frac{d}{dt}xi^t-\frac{d}{dt}xi^0-&=\langle\nabla\Gamma(\theta^t)-\nabla\Gamma(\theta^0),\theta'-\theta \rangle\\
+        &\stackrel{(i)}{\leq} tL \Vert \theta'-\theta\Vert^2
+    \end{align*} 
+    Now integrate 
+    \begin{align*}
+        \Gamma(\theta')=\xi^1&=\xi^0+\int_0^1\frac{d}{dt}\xi^t dt \\
+        &\leq \xi^0+\frac{d}{dt}\xi^0+\frac{1}{2}L\Vert \theta'-\theta\Vert^2 \\
+        &=\Gamma(\theta)+\langle \nabla\Gamma(\theta),\theta'-\theta\rangle+\frac{1}{2}L\Vert \theta'-\theta\Vert\qedhere
+    \end{align*}
+\end{proof}
+
+\begin{remark}
+    Strong convexity:\marginnote{This gives a bound on the loss function from both sides \dots} 
+    \begin{align*}
+        \langle\nabla\Gamma(\theta')-\Gamma(\theta),\theta'-\theta\rangle\geq \delta_0\Vert \theta'-\theta\Vert^2
+    \end{align*}
+    With \(D_\Gamma(y\mid x)=\Gamma(y)-\Gamma(x)+\langle \nabla\Gamma(x),y-x\rangle\)
+    is the \dhighlight{Bregman divergence}.
+    \[\frac{\mu}{2}\Vert \theta'-\theta\Vert^2\leq D_\Gamma(\theta'\mid\theta)\leq \frac{L}{2}\Vert \theta'-\theta\Vert^2\]
+\end{remark}
+
+\subsection{Qausi stochastic approximation}%TODO: FIx
+
+Assume there are observations \(\Phi_n\subset \Omega\), which 
+we might consider as realizations of a random variable \(\Phi\).
+We have \[f:\R^d\times \Omega\to\R^d\]
+\[\bar{f}(\theta)\coloneqq \bE(\underbrace{f(\theta,\Phi)}_{\text{what we observe}}), \theta\in\R^d\]
+As before we look for \(\bar{f}(\theta^\star)=0\)
+\[\frac{d}{dt}\vartheta_t=\bar{f}(\vartheta_t)\]
+A \dhighlight{key assumption} is that what happens when following the state 
+dynamics in any step depends only on the current state.\marginnote{I.e. we have the Markov property}
+
+\[\Phi_n=[\cos(\omega n),\sin(\omega n)],\omega>0\]
+\textit{Markov chain on the unit circle}. We will talk about the probing signal \(\xi\)
+and consider 
+\marginnote{the book uses \(\Theta\) instead of \(\hat{\theta}\)}
+\begin{equation}\label{eq:qsa-ode}
+    \frac{d}{dt}\hat{\theta}_t=a_t  f(\hat{\theta}_t,\xi_t)
+\end{equation}
+a \dhighlight{quasistochastic approximation(QSA)}-ODE, \(a_t\) is the \dhighlight{step size}. 
+
+For deterministic probing signals, we mainly consider two examples 
+\marginnote{Mixture of sin functions}\[\xi_t=\sum_{i=1}^K \overbrace{V^i}^{\in \R^m}sin(2\pi[\Phi_i+\omega_i t])\]
+\dhighlight{Mixture of periodic functions}, fixed \(K\), \dhighlight{phase \(\{\Phi_i\}\)}, \dhighlight{frequencies} \(\{\omega_i\}\).
+
+\[\xi_t=\sum_{i=1}^K V^i[\Phi_i+\omega_it]_{\text{modulo 1}}\]
+
+\begin{figure}[H]\label{fig:2.01}
+    \centering
+    \includegraphics[width=.7\textwidth]{example-image}
+    \caption{Sketch 2.01}
+\end{figure}
+
+These signals have well defined steady-state means and covariance matrices.
+
+Special case: \(\xi_t(i)=\sqrt{2}\sin(\omega_it),\ 1\leq i\leq m,\omega_i\neq \omega_j\forall i\neq j\). Then the \dhighlight{steady-state mean}
+\begin{align*}
+    \lim_{T\to\infty}\int_{0}^{T}\xi_t dt =0 
+\end{align*}
+and \dhighlight{covariance}
+\begin{align*}
+    \lim_{T\to\infty}\int_0^T\xi_i\xi_i^\intercal dt=\Id
+\end{align*}
+
+\markeol{08}
