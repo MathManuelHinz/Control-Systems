@@ -65,7 +65,7 @@ We have some
     Overcomplicating problems by loading lots of information into the state space, might make the problem harder!
 \end{remark}
 
-\subsection{Linear State Space Model}
+\section{Linear State Space Model}
 
 \begin{align}\label{eq:lssm}
     x(k+1)&=Fx(k)+Gu(k)\\
@@ -96,7 +96,7 @@ inserting this into (\ref{eq:lssm}) yields
 Closed vs open loop: In closed loops we don't change our course based on observations, while in open loop systems we do.
 % TODO: Check
 
-\subsection{State Space Models in continuous Time}
+\section{State Space Models in continuous Time}
 
 \[\frac{d}{dt}x=f(x,u)\]
 for \(x\in \R^n, u\in \R^m\). We often write \(u_t,x_t\) for \(u,x\) at time \(t\).
@@ -400,7 +400,7 @@ Under the following assumptions \(J^\star\) is finite:
     with \(K^\star\) depends on \(M^\star,R,F,G\). \marginnote{and implicitly on \(c\)}
 \end{example}
 
-\subsection*{Bellmann equation}
+\section*{Bellmann equation}
 \begin{figure}[H]\label{fig:1.06}
     \centering
     \includegraphics[width=.7\textwidth]{example-image}
@@ -448,7 +448,7 @@ This already gives a hint for an algorithm coming later next lecture.
     This motivates the \(Q\)-function.        
 \end{remark}
 
-\subsection*{Some concepts from Reinforcement Learning}
+\section*{Some concepts from Reinforcement Learning}
 
 \dhighlight{Actors and critic:}
 
@@ -478,7 +478,7 @@ There is a whole class of TD algorithms and those fit into the actors critic app
 \markeol{03}
 \beginlecture{04}{22.04.2025}
 
-\subsection{Value iteration}
+\section{Value iteration}
 
 We approximate \(J^\star\) by a sequence of \(V^k\) given an initial value function \(V^0\).\marginnote{For infinite state spaces we will have to fix this algorithm for memory related reasons}
 \[V^{k+1}(x)=\min_{u}\{c(x,u)+V^k(\cF(x,u))\}, x\in X,\ k\geq 0\]
@@ -522,7 +522,7 @@ This is called \dhighlight{value iteration} often shortened to VI.
     This gives 
     \begin{align*}
         V^n(x) & \leq \sum_{k=0}^{n-1}c(x(k),u(k))+V^0(x(n))\ \text{ for all } u \text{ including }u(k)=\phi^\star(k) \\
-               &\stackrel{n\geq n_0}{=}J^\star(x)+V^0(x(0))=J^\star(x)
+               &\stackrel{n\geq n_0}{=}J^\star(x)+V^0(x^e)=J^\star(x)
     \end{align*}
     For such \(n\), the inequality must be an equality, due to (\ref{eq:povi}) and the use 
     of the optimal policy.
@@ -587,7 +587,7 @@ where \(J^\star\) is the total cost using policy \(\phi^n\).
 
 One view of policy iteration is the focus on updating the policy function!
 
-\subsection{Policy iteration}
+\section{Policy iteration}
 
 Start with an initial policy \(\phi^0,n=0\)
 \begin{itemize}
@@ -634,7 +634,7 @@ This is sometimes also called Howard's algorithm.
 
 Here we always assumed that we can compute everything, especially \(\cF\) and the infinite sum.
 
-\subsection{Exploration}
+\section{Exploration}
 In RL we learn from observations, each state-action pair,
 new state and observed cost gives us information. We need 
 \textit{good} and \textit{useful} information. 
@@ -679,7 +679,7 @@ This dilemma is called the \dhighlight{exploration-exploitation} dilemma.
 \markeol{04}
 \beginlecture{05}{24.04.2025}
 
-\subsection{Linear Quadratic Regulator, Revisited} 
+\section{Linear Quadratic Regulator, Revisited} 
 
 We had \(J^\star(x)=x^\intercal M^\star x\) and quadratic costs,
 \(c(x,u)=x^\intercal S x+ u^\intercal R u\).
@@ -702,7 +702,7 @@ a fixed point equation called the \dhighlight{algebraic Riccati equation}
 \begin{equation}\label{eq:algebraic_riccati}
     M^\star=F^\intercal\left(M^\star-M^\star G\left[R+G^\intercal M^\star G\right]^{-1}G^\intercal M^\star F+S\right)
 \end{equation} 
-\subsection{Approximate \(Q\)-functions}
+\section{Approximate \(Q\)-functions}
 Consider a family of \(Q\)-functions \(\{Q^\theta\mid \theta\in \R^d\}\)
 to approximate \(Q^\star\). Classically used is a linear 
 parametrization 
@@ -737,7 +737,7 @@ is small in a suitable fashion. So we minimize \(\theta\) to achieve this, i.e.
     \Gamma^\epsilon(\theta)=\frac{1}{N}\sum_{i=0}^{N-1}[D_{k+1}(Q^\theta)]^2
 \end{align*} 
 
-\subsection{Bandits}
+\section{Bandits}
 Theory of multi-armed bandits. One has to accept some 
 loss through \dhighlight{exploration} in order to achieve(find) the best strategy.
 One \dhighlight{exploits} the learned strategy when choosing an action according to it.
@@ -745,7 +745,7 @@ One \dhighlight{exploits} the learned strategy when choosing an action according
 In the control of dynamic systems one has for each state \(x\) (or \(x(k)\)) a 
 multi-armed bandit.
 
-\subsection{Other control formulations}
+\section{Other control formulations}
 
 \dhighlight{Discounted cost:}
 \[J^\star(x)=\min_{\underbar{u}}\gamma^kc(x(k),u(k)),\ x(0)\in X\]
@@ -902,7 +902,7 @@ we have shown
     the total cost is bounded.
 \end{proposition}
 
-\subsection{Optimal control in continuous time} 
+\section{Optimal control in continuous time} 
 
 \[\frac{d}{dt}x=f(x,u)\]
 with total cost for \(\underbar{u}=u[0,\infty)\)
@@ -954,7 +954,7 @@ One can show
     theoretical and computational advantages.
 \end{remark}
 
-\subsection{Linear quadratic regulator revisited (once more)}
+\section{Linear quadratic regulator revisited (once more)}
 
 \begin{align*}
     \frac{d}{dt}x&=Fx+Gu,\ x(0)=x_0\\

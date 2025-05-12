@@ -42,7 +42,7 @@ based on
     \[\lim_{n\to\infty}\max_{0\leq t\leq T}\Vert \vartheta_t^n-\vartheta_t=0\]
 \end{proposition}
 
-\begin{proposition}[Gruönwall-Bellman-inequality]\label{prop:26}
+\begin{proposition}[Grönwall-Bellman-inequality]\label{prop:26}
     Let \(\alpha,\beta\) and \(z\) be non-negative functions defined on 
     \([0,T],\ T>0\). Assume that \(\beta,z\) are continuous and that 
     \[z_t\leq \alpha_t+\int_0^t\beta_s z_sds,\ 0\leq t\leq T\]
@@ -103,10 +103,10 @@ based on
         \Vert \vartheta_t\Vert +B_f &\leq \Vert \vartheta_0\Vert + B_f +\underbrace{L}_\beta\int_0^t \left[\underbrace{\Vert\vartheta_\tau+ B_f}_{z_\tau}\right]d\tau\\
         &\leq \left[\Vert \vartheta_0\Vert +B_f\right]\exp(Lt) 
     \end{align*}
-    where the last step follows by the same trick as in (ii), i.e. by using Gruönwall.
+    where the last step follows by the same trick as in (ii), i.e. by using Grönwall.
 \end{proof}
 
-\subsection{Euler's method once more}
+\section{Euler's method once more}
 \marginnote{Explict Euler, implicit Euler is nicer to analyze}
 \begin{equation}\label{eq:euler_v2}
     \frac{\hat{\vartheta}_{t_{n+1}}-\hat{\vartheta}_{t_{n}}}{\alpha_{n+1}} = f(\hat{\vartheta}_{t_n}),\ \hat{\vartheta}_0=\vartheta_0=\theta_0
@@ -117,7 +117,7 @@ It can be shown for \(f\) globally Lipschitz
     \max_{0\leq t\leq T}\Vert \hat{\vartheta}_t-\vartheta_t\Vert \leq \underbrace{K(L,T)}_{\text{exponential in }L,T}\max\{\alpha_k\mid t_k< T\}
 \end{equation} 
 
-\subsection{Optimization}
+\section{Optimization}
 
 \dhighlight{Goal:} Find, for some loss function \(\Gamma:\R^d\to \R_+\),
 \begin{equation}
@@ -189,7 +189,7 @@ From numerical optimization we know:
 \end{proof}
 
 \begin{theorem}\label{thm:31}
-    If the Polyak-Lojasiewiez % TODOFIX 
+    If the Polyak-Lojasiewicz % TODOFIX 
     (PL) inequality \marginnote{Used in stochastic gradient descent}
     \begin{equation}\label{eq:PL}
         \frac{1}{2}\Vert \nabla\Gamma (\theta)\Vert^2\geq \mu |\Gamma(\theta)-\Gamma(\theta^\star)|  
@@ -228,7 +228,7 @@ Consider the Euler method for the gradient flow:
     Suppose that \(\Gamma\) satisfies
     \begin{enumerate}\marginnote{These are more general version of global Lipschitz and convexity}
         \item[(i)] the \(L-\)smooth inequality (LSI) \[\Gamma(\theta')\leq\Gamma(\theta)+[\theta'-\theta]^\intercal\nabla\Gamma(\theta)+\frac{1}{2}L\Vert \theta'-\theta\Vert^2\]
-        \item[(ii)] the PLE \ref{eq:PL}  
+        \item[(ii)] the PL inequality \ref{eq:PL}  
     \end{enumerate}
     Then it holds for \(\alpha\leq \frac{1}{2}\)
     \[\Gamma(\theta_{k})-\Gamma^\star\leq (1-\alpha\mu)^k[\Gamma(\theta_0)-\Gamma^\star].\]
@@ -292,7 +292,7 @@ Consider the Euler method for the gradient flow:
     \[\frac{\mu}{2}\Vert \theta'-\theta\Vert^2\leq D_\Gamma(\theta'\mid\theta)\leq \frac{L}{2}\Vert \theta'-\theta\Vert^2\]
 \end{remark}
 
-\subsection{Qausi stochastic approximation}%TODO: FIx
+\section{Qausi stochastic approximation}%TODO: FIX
 
 Assume there are observations \(\Phi_n\subset \Omega\), which 
 we might consider as realizations of a random variable \(\Phi\).
