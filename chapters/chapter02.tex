@@ -334,5 +334,134 @@ and \dhighlight{covariance}
 \begin{align*}
     \lim_{T\to\infty}\int_0^T\xi_i\xi_i^\intercal dt=\Id
 \end{align*}
-
 \markeol{08}
+\beginlecture{09}{13.05.2025}
+We now use a slightly different notation \(\hat{\theta}\) becomes \(\tilde{\theta}\).
+\begin{equation}\label{eq:QSA-ODE}
+    \frac{d}{dt}\tilde{\theta}_t=a_t f(\tilde{\theta},\xi_t)
+\end{equation}
+\(a_t\) non-negative.
+
+Now consider integrating \(y:[0,1]\to\R\). Basic Monte-Carlo 
+\begin{equation}\label{eq:monte-carlo-integration}
+    \theta_n=\frac{1}{n}\sum_{i=0}^{n-1} y(\underbrace{\Phi(k)}_{\sim\text{Unif}([0,1])})
+\end{equation} 
+
+A \dhighlight{QSA} approach is to use the saw tooth function 
+\[\xi_t=t(\text{modulo 1}).\]
+Obtain estimate by 
+\begin{equation}\label{eq:estimate_qsa}\tilde{\theta}=\frac{1}{t}\int_0^ty(\xi_t)dr\end{equation}
+with a reasonable discretization afterwards.
+
+To use (QSA-ODE (\ref{eq:QSA-ODE})) \(f(\theta,\xi)=y(\xi)-\theta\) with mean vector field 
+\begin{align*}
+    \bar{f}(\theta)&=\lim_{T\to\infty}\int_0^T f(\theta,\xi_t)dt\\
+        &=\int_0^1 y(\xi_t)dt-\theta
+\end{align*}
+which gives \(\theta^\star=\int_0^1y(\xi_t)dt\) as the unique root of \(\bar{f}\). 
+The QSA-ODE \ref{eq:QSA-ODE}
+is \[\frac{d}{dt}\tilde{\theta}_t=a_t[y(\xi_t)-\tilde{\theta}_t]\]
+(\ref{eq:estimate_qsa}) can be transformed into 
+\begin{equation}
+    \frac{d}{dt}\tilde{\theta}_t=\left[-\frac{1}{t^2}\int_0^t y(\xi_r)dr+\frac{1}{t}y(\xi_t)\right]=\underbrace{\frac{1}{t}}_{\eqqcolon a_t}\left[y(\xi_t)-\theta_t\right]
+\end{equation}
+
+\begin{example}
+    \(y(\theta)=e^{4}(\sin(100\theta))\), mean \(\theta^\star\approx-0.5\approx -0.48\).
+    Choose \(a_t=\frac{g}{1+t}\)
+\end{example}
+
+\section{Approximate Policy Improvement}
+
+nonlinear state model in continuous time:
+\begin{align}
+    \frac{d}{dt}x_t=f(x_t,u_t),& t\geq 0\\
+    J^\star(x)=\min_{\underbar{u}}\int_0^\infty c(x_t,u_t)dt & x=x_0
+\end{align}
+
+Given feedback law \(u_t=\phi(x_t)\), we have 
+\begin{equation}
+    J^\phi(x)=\int_0^\infty c(x_t,\phi(x_t))dt,\ x=x_0
+\end{equation}
+%TODO: y might be g here?
+\begin{proposition}\label{prop:34}
+    If \(J\) is finite, then for each initial condition \(x_0\) and each \(t\)
+    \[\frac{d}{dt}J(x_t)=-c(x_t)\]
+    If \(J\) is continuously differentiable, then the Lyapunov bound \(\frac{d}{dt} V(x_t)\)
+    from definition \ref{def:1.20}  follows with equality
+    \[\nabla J(x)f(x)=-c(x)\]
+\end{proposition}
+
+\begin{proof}
+    For any \(T>0\), \(J(x_0)=\int_0^Tc(x_r)dr+J(x_T)\). For \(t\geq 0,\delta>0\) given,
+    use \(T=t+\delta\) and \(T=t\) and subtract:
+    \begin{align*}
+        0=J(x_0)-J(x_0)&=\int_t^{t+\delta}c(x_r)dr+(J(x_{t+\delta})-J(x_t))\\
+        &=\underbrace{\frac{1}{\delta}\int_t^{t+\delta}c(x_r)dr}_{\stackrel{\delta\to 0}{\to}c(x_t)}+\underbrace{\frac{1}{\delta}(J(x_{t+\delta})-J(x_t))}_{\stackrel{\delta\to 0}{\to}\frac{d}{dt}J(x_t)}\\
+        &\implies \frac{d}{dt}J(x_t)=-c(x_t)
+    \end{align*}
+    Using the chain rule yields the second equation.
+\end{proof}
+
+For \(J^\phi\) we have 
+\begin{align*}
+    0=c(x,\phi(x))+\nabla J^\phi(x)\cdot f(x,\phi(x))
+\end{align*}
+
+\dhighlight{Policy Improvement in  continuous time:}
+\[\phi^+(x)\in \argmin_{u}\{\underbrace{c(x,u)+\nabla J(x)\cdot f(x,u)}_{\text{need to approximate by }Q^\phi(x,u)}\}\]
+Now aim for updating of \(Q\)-function. Add to the above \(J^\phi\) on both sides 
+\begin{align*}
+    J^\phi(x)&=J^\phi(x)+c(x,\phi(x))+\nabla J^\phi(x)\cdot f(x,\phi(x))        
+\end{align*}
+We solved for the optimal \(Q\)-function by using a fixed point equation,
+with \(\underbar{Q}^\phi(x)=Q^\phi(x,\phi(x))\) we write \marginnote{\(\underbar{Q}\) for the fixed, but optimal choice of \(u\)}
+\[Q^\phi(x,u)=\underbar{Q}^\phi(x)+c(x,u)+\nabla \underbar{Q}^\phi(x)f(x,u).\]
+Consider \(\{Q^\theta\mid \theta\in \R^d\}\) family of approximations. 
+Bellman errors (Temporal differences expressions?) gives 
+\begin{equation}\label{eq:bellman_error_policy_improvement_continuous}
+    B^\theta(x_t,u_t)=-Q^\theta(x_t,u_t)+\underbar{Q}^\theta(x)+c(x_t,u_t)+\underbrace{\nabla\underbar{Q}^\theta(x) f(x_t,u_t)}_{=\frac{d}{dt}Q^\theta(x_t)}
+\end{equation}
+
+Everything on the RHS is can be observed for any state-action pair without knowledge of \(f\).
+Now, find \(\theta^\star\) that minimizes
+\[\Vert B^\theta\Vert^2=\lim_{T\to\infty}\frac{1}{T}\int_0^T[B^\theta(x_t,u_t)]^2dt\]
+Choose feedback law with exploration \(u_t=\tilde{\phi}(x_t,\xi_t)\). Assuming
+bounded state trajectories, such that (\ref{eq:bellman_error_policy_improvement_continuous}) exists,
+define \(\Gamma(\theta)=\frac{1}{2}\Vert B^\theta\Vert^2\), we get 
+\begin{align*}
+    0&\stackrel{!}{=}\nabla\Gamma(\theta)=\lim_{t\to\infty}\int_0^T\left[B^\theta(x_t,u_t)\right]\nabla_\theta B^\theta(x_t,u_t)dt
+\end{align*}
+Gradient flow 
+\begin{align*}
+    \frac{d}{dt}\vartheta_t=-\nabla_\theta\Gamma(\vartheta_t)
+\end{align*}
+QSA counterpart is (\ref{eq:bellman_error_policy_improvement_continuous})
+with probing signal 
+\[\frac{d}{dt}\tilde{\theta}_t=-a_tB^{\tilde{\theta}_t}(x_t,u_t)\kappa_t^{\tilde{\theta}_t}\]
+with 
+\begin{align*}
+    \kappa_t^{\tilde{\theta}_t}&=\nabla_\theta B^theta(x_t,u_t)\\
+    &=-\nabla_\theta Q^\theta(x_t,u_t)+\{\nabla_\theta Q^\theta(x_t,\phi(x_t))+ \frac{d}{dt}\nabla_\theta Q^\theta(x_t,\phi(x_t))\}
+\end{align*}
+assuming we can exchange differentiation w.r.t time and w.r.t \(\theta\).
+
+(QSA-ODE)
+\begin{align*}
+    \frac{d}{dt}\tilde{\theta}_t=a_tf(\tilde{\theta}_t,\xi_t)
+\end{align*}
+aim to relate this to 
+\[\frac{d}{dt}\vartheta_t=\bar{f}(\vartheta_t).\]
+\begin{lemma}\label{lem:35}
+    Define the change of variables 
+    \[\tau=s_t\coloneqq\int_0^t a_rdr,\ t\geq t_0.\]
+    Let \(\{\vartheta_\tau\mid\tau\geq \tau_0\}\) the solution to 
+    the ODE above initialized to \(\tau_0=s_{t_0}\) with \(\vartheta_{\tau_0}=\tilde{\theta}_{t_0}\).
+    The solution to 
+    \[\frac{d}{dt}\bar{\theta}_t=a_t\bar{f}(\bar{\theta}_t),\ t\geq t_0,\ \bar{\theta}_{t_0}=\tilde{\theta}_{t_0}\]
+    is given b \(\bar{\theta}_t=\vartheta_\tau\).
+\end{lemma}
+\begin{proof}
+    Change of variables and observing that \[d\tau=a_tdt.\]
+\end{proof}
+\markeol{09}
