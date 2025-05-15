@@ -162,7 +162,6 @@ From numerical optimization we know:
     \[\Vert \vartheta_t-\theta^\star\Vert\leq e^{-\delta_0 t}\Vert \vartheta_0-\theta^\star\Vert,\]
     where \(\delta_0\) comes from theorem \ref{thm:29}.
 \end{proposition}
-% TODO: Fix Vert missing?
 \markeol{07}
 \beginlecture{08}{08.05.2025}
 \begin{proof}
@@ -189,7 +188,7 @@ From numerical optimization we know:
 \end{proof}
 
 \begin{theorem}\label{thm:31}
-    If the Polyak-Lojasiewicz % TODOFIX 
+    If the Polyak-Lojasiewicz  
     (PL) inequality \marginnote{Used in stochastic gradient descent}
     \begin{equation}\label{eq:PL}
         \frac{1}{2}\Vert \nabla\Gamma (\theta)\Vert^2\geq \mu |\Gamma(\theta)-\Gamma(\theta^\star)|  
@@ -459,9 +458,130 @@ aim to relate this to
     the ODE above initialized to \(\tau_0=s_{t_0}\) with \(\vartheta_{\tau_0}=\tilde{\theta}_{t_0}\).
     The solution to 
     \[\frac{d}{dt}\bar{\theta}_t=a_t\bar{f}(\bar{\theta}_t),\ t\geq t_0,\ \bar{\theta}_{t_0}=\tilde{\theta}_{t_0}\]
-    is given b \(\bar{\theta}_t=\vartheta_\tau\).
+    is given by \(\bar{\theta}_t=\vartheta_\tau\).
 \end{lemma}
 \begin{proof}
     Change of variables and observing that \[d\tau=a_tdt.\]
 \end{proof}
 \markeol{09}
+\beginlecture{10}{15.05.2025}
+Recall \(\bar{f}(\theta)\coloneqq\lim_{T\to\infty}\int_0^T f(\theta,\xi_t)dt\) for all \(\theta\in\R^d\).
+Remember the temporal transformation 
+\[\tau=s_t=\int_0^t a_rdr\]
+and lemma \ref{lem:35}. Define 
+\(\hat{\theta}_\tau=\tilde{\theta}(s^{-1}(\tau))=\tilde{\theta}_t\mid_{t=s^{-1}(\tau)}\). By 
+the chain rule and observing that \(d\tau=a_tdt\) yields 
+\[\frac{d}{d\tau}\hat{\theta}_\tau=\frac{d}{d\tau}\tilde{\theta}(s^{-1}(\tau))=f(\tilde{\theta}(s^{-1}(\tau)),\xi(s^{-1}(\tau))).\]
+\(\thetahat,\thetatilde\) differ only by a time scaling, so convergence of the one yields convergence of the other.
+\begin{lemma}\label{lem:36}
+    Consider the original ODE 
+    \begin{equation}\label{eq:gradient_flow_ode}
+        \frac{d}{dt}\vartheta_t=\bar{f}(\vartheta_t)  
+    \end{equation}
+    and assume \(f\) is locally Lipschitz with constant \(L_f\).
+    \marginnote{Version of proposition \ref{prop:27}}Then there exists a constant \(B_f\)
+    depending only on \(f\), such that 
+    \[\Vert\thetahat_t-\thetahat_0\Vert\leq \left(B_f+L_f|\Vert \thetahat_0\Vert\right)te^{L_ft},\ t\geq 0\] 
+\end{lemma}
+
+\begin{proof}
+    Proof of proposition \ref{prop:27} in adapted notation.
+\end{proof}
+
+Now, denote by \(\vartheta_w^\tau,w\geq \tau\) the unique solution 
+to (\ref{eq:gradient_flow_ode}):
+\begin{equation*}
+    \frac{\partial }{\partial w}\vartheta_w^\tau=\bar f(\vartheta_w^\tau),\ w\geq \tau,\ \vartheta_\tau^\tau=\thetahat_\tau
+\end{equation*}
+
+with that we get \marginnote{quasistochastic vs continuous}
+\begin{enumerate}
+    \item \(\vartheta_{\tau+v}^\tau=\thetahat_\tau+\int_0^{\tau+v}\bar{f}(\vartheta_w^\tau)dw,\ \tau,v\geq 0\)
+    \item \(\thetahat_{\tau+v}=\thetahat_\tau+\int_\tau^{\tau+v} f(\thetahat_w,\xi(s^{-1}(w)))dw,\ \tau,v\geq 0\)
+\end{enumerate}
+
+The following assumptions will be used in the following:
+\begin{enumerate}
+    \item[\highlight{QSA1}] The process \(a\) is non-negative, monotonically decreasing and \(\lim_{t\to\infty} a_t=0,\int_0^\infty a_rdr=\infty\)\marginnote{it does not go to zero to fast} 
+    \item[\highlight{QSA2}] The functions \(\hat{f},f\) are Lipschitz continuous with constant \(L_f\):\begin{align*}
+        \Vert \bar{f}(\theta')-\bar{f}(\theta)\Vert &\leq \Vert L_f \Vert \theta'-\theta\Vert\\
+        \Vert f(\theta',z)-f(\theta,z)\Vert &\leq \Vert L_f \Vert \theta'-\theta\Vert
+    \end{align*} for all \(\theta,\theta'\in R^d,z\in\Omega\) and there exists a Lipschitz continuous functions \(b_0:R^d\to\R_+\), such that for all \(\theta\in\R^d\)\marginnote{Is my probing covering everything: ergocity, ergodic bound} 
+\[\left\Vert \int_{t_0}^{t_1}f(\theta,\xi_t)-\bar{f}(\theta)dt\right\Vert\leq b_0(\theta),\ 0\leq t_1\leq t_1\]
+    \item[\highlight{QSA3}] The ODE \(\frac{d}{dt}\vartheta_t=\bar{f}(\vartheta_t)\) 
+    has a globally asymptotically stable equilibrium \(\theta^\star\) 
+\end{enumerate}
+Consider first, arbitrary \(\theta\)
+\begin{lemma}\label{lem:37}
+    \marginnote{There is a connect to the law of large numbers ...}
+    Assume (QSA1), (QSA2) hold for any fixed \(T>0\) and \(\theta\in\R^d\).
+    \begin{align*}
+        \left\Vert\int_{\tau}^{\tau+T}\left[f(\theta,\xi(s^{-1}(w)))-\bar{f}(\theta)\right]dw \right\Vert\leq b_0(\theta)\epsilon_\tau^f,
+    \end{align*}   
+    where \(\epsilon_\tau^f=3a_t\mid_{t=s^{-1}(\tau)}\) and \(b_0\) comes from (QSA2).
+\end{lemma}
+\begin{proof}
+    Set \(\tilde{f}_w(\theta)=f(\theta,\xi_w)-\bar{f}(\theta)\) for each \(w,\theta\). Write 
+    \marginnote{large \(\epsilon_t\) in the book? Prob. \(\mathcal{E}\)}
+    \begin{align*}
+        E_t=\int_0^t\tilde{f}_w(\theta)dw.
+    \end{align*}
+    By assumptions \(\Vert E_t\Vert\leq b_0(\theta),\ t\geq 0\).
+    \begin{align*}
+        \int_{t_0}^{t_1} a_t \tilde{f}_t(\theta)dt&\stackrel{\text{IbP}}{=}a_tE_t\mid_{t_0}^{t_1}-\int_{t_0}^{t_1}\vert a_t'\vert E_tdt \\
+        \left\Vert \int_{t_0}^{t_1} a_t \tilde{f}_t(\theta)dt\right\Vert &\leq a_{t_0}\Vert E_{t_0}\Vert+ a_{t_1}\Vert E_{t_0}\Vert+\int_{t_0}^{t_1} \vert a_t'\vert E_tdt\\
+        &\stackrel{a \text{ decreasing}}{\leq} 2 a_{t_0}b_0(\theta)-b_0(\theta)\int_{t_0}^{t_1} a_t' dt\\
+        &\leq 3 a_{t_0} b_0(\theta) 
+    \end{align*}
+    Set \(t_0=s^{-1}(\tau),t_1=s^{-1}(\tau+T), t=s^{-1}(w)\),
+    giving \(dw=a_tdt\)
+    \begin{align*}
+        \left\Vert \int_{\tau}^{\tau+T} [f(\theta,\xi(s^{-1}(w)))-\bar{f}(\theta)]dw \right\Vert&=
+        \left\Vert \int_{t_0}^{t_1} a_t \tilde{f}_t(\theta)dt\right\Vert\\
+        &\leq 3a_{t_0}b_0(\theta)=\epsilon_\tau^f b_0(\theta)
+    \end{align*}
+\end{proof}
+
+\begin{proposition}\label{prop:38}
+    Assuming that \(\thetahat\) is bounded. Then for any \(T>0\)
+    \[\lim_{\tau\to\infty}\sup_{v\in[0,T]}\left\Vert \overbrace{\int_\tau^{\tau+v}\left[f(\hat{\theta}_w, \xi(s^{-1}(w)))-\bar{f}(\hat{\theta}_w)\right]dw}^{E_{\tau+v}^{\tau}}\right\Vert=0\]
+    and 
+    \[\lim_{\tau\to\infty}\sup_{v\in[0,T]}\left\Vert \hat{\theta}_{\tau+v}-\vartheta_{\tau+v}^\tau \right\Vert=0\]
+\end{proposition}
+\begin{proof}
+    We use piecewise constant approximation, as in Riemannian integration, and set for \(\delta>0,\ \tau_k=\tau+k\delta,\ k\geq 0\) 
+    \begin{align*}
+        E_{\tau+v}^\tau=\sum_{k=0}^{n_v-1}\int_{\tau_k}^{\tau_{k+1}} \left[f(\thetahat_{\tau_k},\xi(s^{-1}(w)))-\bar{f}(\thetahat_{\tau_k})\right]dw +\epsilon_{v}^\tau,
+    \end{align*}
+    which holds due to (QSA1), Lipschitz condition, \(n_v=\lfloor \frac{v}{\delta}\rfloor\).
+    and \[\Vert \epsilon_v^\tau\leq b_L v\delta\]
+    for some finite constant \(b_L\). Assuming \(\thetahat\) is bounded, this bound is uniform in \(\tau\).
+    For fixed \(\thetahat_{t_k}\) we can use lemma \ref{lem:37}, so 
+    \begin{align*}
+        \Vert E_{\tau+v}^\tau\Vert &\leq \sum_{k=0}^{n_v-1}\epsilon_{\tau_k}^fb_0(\thetahat_{t_k})+b_L v\delta\\
+        &\leq \epsilon_\tau^f\sum_{k=0}^{n_v-1} b_0(\thetahat_{\tau_k})+b_L v\delta
+    \end{align*}
+    Let \(b<\infty\) denote a constant such that \(b_0(\thetahat_{\tau_k})\leq b\ \forall \tau\), which we can do since \(\thetahat\) is bounded, \(b_0\) Lipschitz.
+    \begin{align*}
+        \left\Vert E_{\tau+v}^\tau\right\Vert\leq b \frac{v}{\delta}\underbrace{\epsilon_\tau^f}_{\stackrel{\tau\to\infty}{\to }0\text{ by QSA1}}+b_Lv\delta
+    \end{align*}
+    For any \(T>0\)
+    \begin{align*}
+        \lim_{\tau\to\infty}\sup_{v\in [0,T]}\Vert E_{\tau+v}^\tau\Vert \leq 0+ b_L T\delta
+    \end{align*}
+    Since \(\delta>0\) was arbitrary, we have the first statement.
+
+
+    For the second limit: \(E_r^\tau=\vartheta_r^\tau-\thetahat_r\). The pair of identities after lemma \ref{lem:36} give 
+    using Lipschitz condition from (QSA2) we get
+    \begin{align*}
+        E_{\tau+v}^\tau&=0+\int_{\tau}^{\tau+v}\bar{f}(\thetahat_w)-f(\thetahat_w,\xi(s^{-1}(w)))dw + \int_\tau^{\tau+v}\underbrace{\left[\bar{f}(\vartheta_v^\tau)-\bar{f}(\thetahat_w)\right]}_{\Vert \dots \Vert \leq L_f \Vert E_w^\tau\Vert}dw\\
+        \Vert E_{\tau+v}^\tau&\leq \delta^\tau+L_f \int_{\tau}^{\tau+v}\Vert E_w^\tau\Vert dw,
+    \end{align*}
+    where \[\delta^\tau\coloneqq \sup_{\tau'\geq \tau}\max_{0\leq v\leq T}\left\Vert \int_{\tau'}^{\tau'+v}\left[\bar{f}(\thetahat_w)-f(\thetahat_w,\xi(s^{-1}(w)))\right]dw\right\Vert\]    
+    Grönwalls lemma gives 
+    \[\Vert E_{\tau+v}^\tau\leq e^{Lf}\delta^\tau\forall \tau, \ 0\leq v\leq 1\]
+    \(\delta^\tau\to 0\) for \(\tau\to\infty\) due to the first statement.
+\end{proof}
+
+\markeol{10}
