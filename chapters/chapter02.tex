@@ -548,6 +548,7 @@ Consider first, arbitrary \(\theta\)
     and 
     \[\lim_{\tau\to\infty}\sup_{v\in[0,T]}\left\Vert \hat{\theta}_{\tau+v}-\vartheta_{\tau+v}^\tau \right\Vert=0\]
 \end{proposition}
+
 \begin{proof}
     We use piecewise constant approximation, as in Riemannian integration, and set for \(\delta>0,\ \tau_k=\tau+k\delta,\ k\geq 0\) 
     \begin{align*}
@@ -576,12 +577,143 @@ Consider first, arbitrary \(\theta\)
     using Lipschitz condition from (QSA2) we get
     \begin{align*}
         E_{\tau+v}^\tau&=0+\int_{\tau}^{\tau+v}\bar{f}(\thetahat_w)-f(\thetahat_w,\xi(s^{-1}(w)))dw + \int_\tau^{\tau+v}\underbrace{\left[\bar{f}(\vartheta_v^\tau)-\bar{f}(\thetahat_w)\right]}_{\Vert \dots \Vert \leq L_f \Vert E_w^\tau\Vert}dw\\
-        \Vert E_{\tau+v}^\tau&\leq \delta^\tau+L_f \int_{\tau}^{\tau+v}\Vert E_w^\tau\Vert dw,
+        \Vert E_{\tau+v}^\tau\Vert&\leq \delta^\tau+L_f \int_{\tau}^{\tau+v}\Vert E_w^\tau\Vert dw,
     \end{align*}
     where \[\delta^\tau\coloneqq \sup_{\tau'\geq \tau}\max_{0\leq v\leq T}\left\Vert \int_{\tau'}^{\tau'+v}\left[\bar{f}(\thetahat_w)-f(\thetahat_w,\xi(s^{-1}(w)))\right]dw\right\Vert\]    
     Grönwalls lemma gives 
-    \[\Vert E_{\tau+v}^\tau\leq e^{Lf}\delta^\tau\forall \tau, \ 0\leq v\leq 1\]
+    \[\Vert E_{\tau+v}^\tau\Vert \leq e^{Lf}\delta^\tau\forall \tau, \ 0\leq v\leq 1\]
     \(\delta^\tau\to 0\) for \(\tau\to\infty\) due to the first statement.
 \end{proof}
 
 \markeol{10}
+\beginlecture{11}{20.05.2025}
+
+\begin{theorem}[Boundedness implies convergence]\label{thm:39}
+    Suppose that (QSA1-QSA3) hold. % TODO LINK
+    hold. Further assume \highlight{ultimate boundedness}, i.e. that a \(b<\infty\) exists,
+    such that for each \(\theta\in \R^d\) and \(z\in\Omega\) there is a \(T_{\theta,z}\),
+    such that \(\Vert \thetahat_\tau \Vert \leq b\) for all \(\tau\geq T_{\theta,z}\), where 
+    \(\thetahat_0=\theta,\xi_0=z\). Then the solution to (\ref{eq:QSA-ODE}) %FIX ODE
+    \[\frac{d}{dt}\thetatilde_t=a_t f(\thetatilde_t,\xi_t)\] 
+    converges to \(\theta^\star\) for each initial condition.
+\end{theorem} 
+
+\begin{proof}
+    Consider the the time scaled \(\thetahat_t\)
+    \begin{align*}
+        \Vert \vartheta_{\tau}^\tau\Vert = \Vert \thetahat_t\Vert \stackrel{\text{pA}}{\leq} b,\ \tau\geq T_{\theta,z}
+    \end{align*}
+    Using (QSA3), i.e. \(\frac{d}{dt}\vartheta_t=\bar{f}(\vartheta_t)\) has a globally asymptotically stable
+    equilibrium \(\theta^\star\), we have that for every \(\epsilon>0\), there is exists 
+    \(T_\epsilon>0\) s.t. \(\Vert \vartheta_{\tau+v}-\theta^\star\Vert<\epsilon\ \forall v\geq T_\epsilon\),
+    whenever \(\Vert \vartheta_\tau^\tau\Vert \leq b\).
+
+    Then 
+    \begin{align*}
+        \limsup_{\tau\to\infty} \Vert \thetahat_{\tau+T_\epsilon}-\theta^\star\Vert &\leq \underbrace{\limsup_{\tau\to\infty}\Vert \thetahat_{\tau+T_\epsilon}-\vartheta_{\tau+T_\epsilon}^\tau\Vert}_{\to 0 \text{ by proposition \ref{prop:38}}} + \underbrace{\limsup_{\tau\to\infty}\Vert \vartheta_{\tau+T_\epsilon}^\tau-\theta^\star\Vert}_{\leq \epsilon} \qedhere
+    \end{align*}
+\end{proof}
+
+\begin{lemma}[Weaker form of proposition \ref{prop:38} (ii)]\label{lem:40}
+    For some \(\bar{\delta}<\infty\) and any \(0\leq T\leq 1\)
+    \[\Vert \thetahat_{\tau+T}-\vartheta_{\tau+T}^\tau\Vert \leq e^{L_f}b_0(\thetahat_\tau)\epsilon_{\tau}^f+\bar{b}(1+\Vert \thetahat_\tau\Vert)T^2\]
+    where \(b_0(\theta)\) and \(L_f\) are from (QSA2).
+\end{lemma}
+
+\begin{proof}
+    Write \(E_r^\tau=\vartheta_r^\tau-\thetahat_r,\ r\geq T\). The pair of
+    identities after lemma \ref{lem:36} give, after inserting \(\pm \bar{f}(\theta_w)\) 
+    \begin{align*}
+        E_{\tau+T}^\tau=0+\int_\tau^{\tau+T}\left[\bar{f}(\thetahat_w)-f(\thetahat_w,\xi(s^{-1}(w)))\right]dw+\int_\tau^{\tau+T}\left[\bar{f}(\vartheta_w^\tau)-\bar{f}(\thetahat_w)\right]dw
+    \end{align*} 
+    using (QSA2) we can bound \marginnote{like last lecture ...}
+    \begin{align*}
+        \Vert \bar{f}(\thetahat_w)-\bar{f}(\thetahat_\tau)\Vert &\leq L_f\Vert \thetahat_w-\thetahat_\tau\Vert\\
+        \Vert f(\thetahat_w,\xi(s^{-1}(w)))-f(\thetahat_\tau,\xi(s^{-1}(w)))\Vert &\leq L_f\Vert \thetahat_w-\thetahat_\tau\Vert \\
+        \Vert \bar{f}(\vartheta_w^\tau)-\bar{f}(\vartheta_w)\Vert &\leq L_f\Vert E_w^\tau\Vert 
+    \end{align*}
+
+    With that, for any \(T>0\) by inserting terms with \(\thetahat_\tau\)
+    \begin{align*}
+        \Vert E_{\tau+T}^\tau\Vert &\leq \left\Vert \int_{\tau}^{\tau+T}\left[\bar{f}(\thetahat_\tau)-f(\thetahat_\tau,\xi(s^{-1}(w)))\right]dw\right\Vert + 2L_f\int_{\tau}^{\tau+T}\Vert \thetahat_w-\thetahat_\tau\Vert+L_f\int_{\tau}^{\tau+T}\Vert E_w^\tau\Vert dw\\
+        &\leq \alpha_T^\tau+ L_f \int_{\tau}^{\tau+T}\Vert E_w^\tau\Vert dw,
+    \end{align*}
+    where
+    %TODO: FIx
+    %
+    \[\alpha_T^\tau\coloneqq \underbrace{b_o(\thetahat_\tau)}_{\text{from (QSA2)}}\epsilon_\tau^f+2L_f\int_0^T\Vert \thetahat_{\tau+w}-\thetahat_\tau\Vert dw\]
+    Using Grönwalls lemma, proposition \ref{prop:26} (ii) \[\Vert E_{\tau+T}^\tau\Vert\leq \alpha_T^\tau e^{L_f T}\]
+    Repeating the proof for proposition \ref{prop:27}, we get 
+    \[\Vert \thetahat_{\tau+w}-\thetahat_\tau\Vert \leq (B_f+L_f\Vert \thetahat_\tau\Vert)we^{L_f w}.\]
+    Increase \(e^{L_f w}\) to \(e^{L_f T}\) to get 
+    \begin{align*}
+        2\int_{0}^T\Vert \thetahat_{\tau+w}-\thetahat_\tau\Vert dw&\leq 2 (B_f + L_f\Vert \thetahat_\tau)e^{L_f T}\int_0^T w dw\\
+        &=(B_f+L_f\Vert\thetahat_\tau\Vert)T^2 e^{L_f T}
+    \end{align*}
+    Hence 
+    \[\alpha_T^\tau\leq b_0(\thetahat_\tau)\epsilon_\tau^f+L_f(B_f+L_f\Vert\thetahat_\tau\Vert)T^2 e^{L_f T}\]
+    Since \(0\leq T\leq 1\), we can find \(\bar{b}<\infty\) to bound \(L_f(B_f+L_f\Vert\thetahat_\tau\Vert)T^2 e^{L_f T}\)
+    by \(\bar{b}(1+\Vert \thetahat_\tau)\Vert T^2\), where \(\bar{b}\) depends on fixed \(B_f,L_f\).
+\end{proof}
+
+Reminder, \highlight{drift condition}
+\[\langle \nabla f(\theta),f(\theta)\rangle < 0,\ \theta\neq \theta^\star\]
+
+\begin{definition}[ultimately bounded]\label{def:41}
+    The ODE \[\frac{d}{d\vartheta}_t=f(\vartheta_t),\ \vartheta_0=\theta_0\] is called 
+    \dhighlight{ultimately bounded} if there exists a bounded set \(S\subset \R^d\), such that 
+    for each initial condition \(\theta_0\), there is a time \(T(\theta_0)\) such that 
+    \(\vartheta_t\in S \ \forall t\geq T(\theta_0)\).
+\end{definition}
+
+\begin{proposition}\label{prop:42}
+    Assume that there is a continuously differentiable function \(V\)\marginnote{Lyapunov function}
+    \(V:\R^d\to \R_+\) satisfying the Lyapunov condition\marginnote{If we are not in \(S\), we are getting pointed into that direction}
+    \[\langle \nabla V(\theta),f(\theta)\rangle\leq -\delta_0,\ \theta\in S^c\]
+    for some \(\delta_0>0\) and some set \(S\subset \R^d\). Then \(T_S(\theta)\leq \delta_0^{-1}V(\theta)\)
+    for \(\theta\in\R^d\), where \marginnote{\dhighlight{first entrance time} \(T_S\)}
+    \[T_S(\theta)=\min \{t\mid \vartheta_t\in S\},\ \vartheta_0=\theta\in \R^d.\]
+    
+    If in addition \(S\) is compact and \(V\) inf-compact, then the corresponding ODE is ultimately bounded. 
+\end{proposition}
+
+\begin{proof}
+    Assume \(\delta_0=1\) w.l.o.g., we interpret the condition as \textit{along a path}
+    \[\frac{d}{dt}V(\vartheta_t)\leq 1,\]
+    for \(0\leq t\leq T_S(\theta),\ \vartheta_0=\theta\in \R^d\).
+    \(T_N=\min(N,T_s(\theta))\), integrate both sides from \(t=0\) to \(t=T_N\).
+    \begin{align*}
+        -V(\vartheta_0)\leq V(\vartheta_{T_n})-V(\vartheta_0)\leq \int_0^{T_N} \frac{d}{dt}V(\vartheta_t)dt\leq -T_N
+    \end{align*}
+    or \(\min(N,T_S(\theta))\leq V(\vartheta_0)\). Choosing \(N\geq V(\vartheta_0)\) gives 
+    the bound on the first entrance time:
+    \[T_S(\theta)\leq \delta_0^{-1}V(\theta).\]
+    
+    Now we need to show that it stays in some \(S\). Now, \(S\) is compact, \(V\)
+    is inf-compact, so there exists \(N<\infty\) such that \(S\subset S_V(N)=\{\theta\mid V(\theta)\leq N\}\),
+    with \(S_V(N)\) compact as well. Hence  
+    \begin{align*}
+        \langle \nabla V(\theta),f(\theta)\rangle \leq -1, \ \theta\in \R^d,\ V(\theta)\geq N
+    \end{align*}
+    writing \(V(\theta)>N\) corresponds to \(\theta\in S_V(N)^c\). 
+    
+    Now, \(V(\vartheta_t)\) is therefore decreasing, whenever \(\vartheta_t\in S_V(N)^c\), this shows 
+    that the set \(S_V(N)\) is \highlight{absorbing}, which gives that \[\vartheta_t\in S_V(N)\ \forall t\geq T_S(\theta).\qedhere\]
+\end{proof}
+
+\dhighlight{Assumption (QSV):}\marginnote{QSV1 in the book}
+
+There exists a continuous function \(V:\R^d\to\R\), and constants
+\(c_0>0,\delta_0\) s.t. for any initial condition \(\vartheta_0\) of the ODE and 
+and \(0\leq T\leq 1\) it holds for \(\Vert \vartheta_s\Vert>c_0\), that \marginnote{\(V\) is strictly decreasing in that setting}
+\[V(\vartheta_{s+T})-V(\vartheta_s)\leq -\delta_0\int_0^T\Vert  \vartheta_t\Vert dt.\]
+The Lyapunov function \(V\) is Lipschitz continuous with constant \(L_V\).  
+
+%not the assumption anymore
+
+If \(V\) is differentiable, then \(QSV\) implies 
+\[\frac{d}{dt}V(\vartheta_t)\leq -\delta_0\Vert \vartheta_t\Vert,\]
+whenever \(\Vert \vartheta_t\Vert >c_0\).
+
+
+\markeol{11}
