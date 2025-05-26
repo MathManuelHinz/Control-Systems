@@ -605,7 +605,7 @@ Consider first, arbitrary \(\theta\)
     \end{align*}
     Using (QSA3), i.e. \(\frac{d}{dt}\vartheta_t=\bar{f}(\vartheta_t)\) has a globally asymptotically stable
     equilibrium \(\theta^\star\), we have that for every \(\epsilon>0\), there is exists 
-    \(T_\epsilon>0\) s.t. \(\Vert \vartheta_{\tau+v}-\theta^\star\Vert<\epsilon\ \forall v\geq T_\epsilon\),
+    \(T_\epsilon>0\) s.t. \(\Vert \vartheta_{\tau+v}^\tau-\theta^\star\Vert<\epsilon\ \forall v\geq T_\epsilon\), % \Vert \vartheta_{\tau+v}^\tau-\theta^\star\Vert<\epsilon vllt. ist das richtig
     whenever \(\Vert \vartheta_\tau^\tau\Vert \leq b\).
 
     Then 
@@ -704,7 +704,7 @@ Reminder, \highlight{drift condition}
 \dhighlight{Assumption (QSV):}\marginnote{QSV1 in the book}
 
 There exists a continuous function \(V:\R^d\to\R\), and constants
-\(c_0>0,\delta_0\) s.t. for any initial condition \(\vartheta_0\) of the ODE and 
+\(c_0>0,\delta_0\) s.t. for any initial condition \(\vartheta_0\) of the ODE 
 and \(0\leq T\leq 1\) it holds for \(\Vert \vartheta_s\Vert>c_0\), that \marginnote{\(V\) is strictly decreasing in that setting}
 \[V(\vartheta_{s+T})-V(\vartheta_s)\leq -\delta_0\int_0^T\Vert  \vartheta_t\Vert dt.\]
 The Lyapunov function \(V\) is Lipschitz continuous with constant \(L_V\).  
@@ -714,6 +714,139 @@ The Lyapunov function \(V\) is Lipschitz continuous with constant \(L_V\).
 If \(V\) is differentiable, then \(QSV\) implies 
 \[\frac{d}{dt}V(\vartheta_t)\leq -\delta_0\Vert \vartheta_t\Vert,\]
 whenever \(\Vert \vartheta_t\Vert >c_0\).
-
-
 \markeol{11}
+\beginlecture{12}{22.05.2025}
+\begin{lemma}\label{lem:43}
+    Assume \(V:\R^d\to\R_+\) is Lipschitz continuous and that for some constant \(T>0\),
+    \(0<\delta_1<1\) and \(\tau_0,b<\infty\) it holds 
+    \[V(\thetahat_{\tau+T})-V(\thetahat_\tau)\leq -\delta_1\Vert \thetahat_\tau\Vert\]
+    for all \(\tau\geq \tau_0\), \(\Vert\thetahat_\tau\Vert>b\). Then the solution 
+    to the time-scaled ODE 
+    \begin{align*}\label{eq:ts-ode}
+        \frac{d}{d\tau} \thetahat_\tau = f(\thetahat(s^{-1}(\tau)),\xi(s^{-1}(\tau)))
+    \end{align*}
+    is ultimately bounded. 
+\end{lemma}
+
+\begin{proof}
+    For each initial condition \(\thetahat_0=\theta\) and \(\tau\geq \tau_0\), denote by 
+    \(\hat{\tau}=\hat{\tau}(\theta,\tau)\coloneqq \min(v\geq 0\mid \Vert \thetahat_{\tau+v}\Vert \leq b)\),
+    where \(\tau_0,b\) as before. For clarity, if \(\Vert\thetahat_{\tau+v}\Vert>b\)
+    for all \(v\geq 0\), set \(\hat{\tau}=\infty\).
+
+    For \(m\in Z_+\), define \(\hat{\tau}_m=\min(\hat{\tau},m)\). Then 
+    \begin{align*}
+        -\hat{\tau}_m b\delta_1&\geq -\delta_1\int_\tau^{\tau+\tau_m}\underbrace{\Vert \thetahat_w\Vert}_{\leq b} dw\\
+        &\geq \int_\tau^{\tau+\hat{\tau}_m}(V(\thetahat_{w+T})-V(\thetahat_w))dw \\
+        &=\int_{\tau+\hat{\tau}_m}^{\tau+\hat{\tau}_m+T}V(\thetahat_w)dw-.\int_\tau^{\tau+T} V(\thetahat_w)dw\\
+        &\geq -.\int_\tau^{\tau+T} V(\thetahat_w)dw
+    \end{align*}
+    This bound is independent of \(m\), holds for all \(\hat{\tau}_m\). Therefore 
+    \begin{align*}
+        \hat{\tau}\leq \frac{1}{b\delta_1}\int_\tau^{\tau+T} V(\thetahat_w)dw
+    \end{align*}
+    \begin{align*}
+        \int_\tau^{\tau+T} V(\thetahat_w)dw&\leq\int_\tau^{\tau+T}\vert V(\thetahat_w)-V(\thetahat_\tau)\vert +\vert V(\thetahat_\tau)\vert dw\\
+        &\leq \int_{\tau}^{\tau+T}\underbrace{L_V\Vert \thetahat_w\Vert}_{\text{prop \ref{prop:27}: }\leq (C(V)+\Vert \thetahat_\tau\Vert)c(L_V,T)} + L_V\Vert \thetahat_\tau\Vert + \vert V(\thetahat_\tau)\vert dw 
+    \end{align*}
+    So the integral can be bounded by constants depending on fixed values. So we can obtain a bound 
+    \begin{align*}
+        \hat{\tau}\leq b_V (1+\Vert \thetahat_\tau\Vert).
+    \end{align*}
+    Hence \(\hat{\tau}(\theta,\tau)\) is everywhere finite. 
+
+    Denote by \(b_1\sup \{\Vert \thetahat_{\tau+v}\Vert\mid \tau \geq \tau_0,v\leq \hat{\tau}(\theta,\tau),\Vert \thetahat_\tau\Vert\leq b+1\}\).
+    In words, \(b_1\) bounds the maximum norm of any breakout %FIX\(\underbar{\theta}\) that begins \marginnote{\(\underbar{\theta}\), since we are talking about the whole process}
+    at time \(\tau\) if \(\thetahat_\tau\in S=\{\theta\mid \Vert \theta\Vert\leq b+1\}\)
+    and ends at the arrival time to the set 
+    \[S_0\coloneqq \{\theta\mid \Vert \theta\Vert \leq b\}\] 
+    denoted \(\tau+\hat{\tau}(\theta,\tau)\).
+
+    Now every trajectory enters \(S_0\subset S\) for some \(\tau\geq \tau_0\), so 
+    it fulfills that \(\Vert\thetahat_\tau\Vert\leq b_1\) for all \(\tau\) sufficiently large,
+    which gives ultimate boundedness.
+\end{proof}
+
+\begin{proposition}\label{prop:44}
+    Under (QSV), the solution to (\ref{eq:ts-ode}) is ultimately bounded, i.e. there exists 
+    some \(b<\infty\) such that for any 
+    \begin{align*}
+        \thetahat_0=\theta,\limsup_{\tau\to\infty}\Vert \thetahat_\tau\Vert \leq b
+    \end{align*}
+\end{proposition}
+
+\begin{proof}
+    \(V\) is from (QSV) and \(c_0\) the constant. For \(0\leq T\leq 1,\Vert \thetahat_\tau\Vert\geq c_0+1\)
+    \begin{align*}
+        V(\thetahat_{\tau+T})-V(\thetahat_\tau)&=V(\thetahat_{\tau+T})-V(\vartheta_{\tau+T}^\tau)+V(\vartheta_{\tau+T}^\tau)-\underbrace{V(\vartheta_{\tau}^\tau)}_{=\thetahat_T}\\
+        &\leq \vert V(\thetahat_{\tau+T})-V(\vartheta_{\tau+T}^\tau)\vert+V(\vartheta_{\tau+T}^\tau)-V(\vartheta_{\tau}^\tau)\\
+        &\leq L_V\Vert \thetahat_{\tau+T}-\vartheta_{\tau+T}^\tau\Vert - \delta_0\int_0^T\underbrace{\Vert \vartheta_{\tau+T}^\tau\Vert}_{\leq \Vert \thetahat_\tau\Vert +\Vert \int_\tau^{\tau+T} \bar{f}(\vartheta_w^\tau)dw\Vert} dt\\
+        &\leq L_V\Vert \thetahat_{\tau+T}-\vartheta_{\tau+T}^\tau\Vert-\delta_0T\Vert \thetahat_\tau\Vert\\
+        &\stackrel{\text{Lemma \ref{lem:40}}}{\leq} L_V(e^{L_f}b_0(\thetahat_\tau)\epsilon_\tau^f+\bar{b}(1+\Vert\thetahat_\tau\Vert)T^2)-\delta_0T\Vert \thetahat_\tau\Vert
+    \end{align*}
+    So, we can choose \(T>0\) small enough and 
+    \(\tau_0\) large enough, so that 
+    \[V(\thetahat_{\tau+T})-V(\thetahat_\tau)\leq -\frac{1}{2}\delta_0 T\Vert \thetahat_\tau\Vert,\ \tau\geq \tau_0,\ \Vert \thetahat_\tau\Vert c_0+1\]
+    and we can use the lemma \ref{lem:43}.\marginnote{Now we can ultimate boundedness and therefore convergence!}
+
+
+\end{proof}
+
+
+\section{Gradient free Optimization}
+
+Reminder: \[\min_{\theta\in\R^d}\Gamma(\theta)\] 
+we assume it has a unique minimizer \(\theta^\star\).
+\begin{align*}
+    \bar{f}(\theta=\nabla\Gamma(\theta))
+\end{align*}
+we look for \(\theta^\star\) with \(\bar{f}(\theta^\star)=0\). But,
+we are using \(f(\theta,\xi_t)\) due to lack of information.
+
+Generally, we design some \(\tilde{\nabla}_\Gamma(t)\) to approximate the above in an average sense
+\[\int_{T_0}^{T_1}a_t\tilde{\nabla}_\Gamma(t)dt \approx \int_{T_0}^{T_1}a_t \nabla\Gamma(\thetatilde_t)dt,\ T_1>T_0>0\]
+and construct and ODE 
+\begin{equation}
+    \frac{d}{dt}\thetatilde_t=-a_t\tilde{\nabla}_\Gamma(t)
+\end{equation}
+
+We now assume \(\psi_t=\thetatilde_t+\epsilon \xi_t,\ t\geq 0,\epsilon\geq 0\)
+and we observe \(\Gamma(\psi_t)\) for each \(t\). Here \(\psi_t\) is a \(d\)-dimensional probing signal.
+
+We had \begin{align*}
+    \lim_{T\to\infty}\frac{1}{T}\int_0^T \xi_t dt=0,\ \lim_{T\to\infty}\frac{1}{T}\int_0^T \xi\cdot \xi^\intercal dt=Id
+\end{align*}
+% ALGO 
+\dhighlight{Quasi sotchastic gradient descent \#1: qSGD \#1}
+
+\textbf{Input:} \(d\times d\) pos. def. matrix G, \(\thetatilde_0\in \R^d\)
+
+\(\frac{d}{dt}\thetatilde_t=-a_t\frac{1}{\epsilon}G\xi_t\Gamma(\psi_t)\), where \(\psi_t=\tilde{\theta}_t+\epsilon\xi_t\)
+In QSA-ODE 
+we have therefore \(f(\theta_t,\xi_t)=-\frac{1}{\epsilon}G\xi_t\Gamma(\theta_t+\epsilon\xi_t)\)
+If\(\Gamma\in C^2\):
+\begin{align*}
+    \Gamma(\theta+\epsilon\xi_t)=\Gamma(\theta)+\epsilon\xi_t^\intercal \nabla\Gamma(\theta)+\frac{1}{2}\epsilon^2\xi_t^\intercal\nabla^2 \Gamma(\theta)\xi_t+o(\epsilon^2).
+\end{align*}
+\begin{align*}
+    f(\theta,\xi_t)&=-\frac{1}{\epsilon}G\xi_t\Gamma(\theta)-G \xi_t\xi_t^\intercal\nabla\Gamma(\theta)+O(\epsilon)\\
+    \underbrace{\lim_{T\to\infty}\frac{1}{T}\int_0^Tf(\theta,\xi_t)dt}_{\bar{f}_\epsilon(\theta)}&=0-G\nabla\Gamma(\theta)+O(\epsilon) 
+\end{align*}
+
+
+For \(G=\Id\) qSGD\#1 will approximate the steepest descent algorithm. In (QSA2) we assumed that 
+\(f, \bar{f}\) are Lipschitz, but while \(\nabla\Gamma\) usually is Lipschitz, \(\Gamma\) often is not!
+
+\dhighlight{Algorithm qSDG \#3}
+
+For a given \(d\times d\) pos. def. matrix \(G\) and \(\thetatilde_0\in\R^d\)
+\begin{align*}
+    \frac{d}{dt}\thetatilde_t=-a_t\frac{1}{2\epsilon} G\xi_t\left[\Gamma(\thetatilde_{t}+\epsilon\xi_t)-\Gamma(\thetatilde_t-\epsilon\xi_t)\right]\eqcolon a_t f(\thetatilde_t,\xi_t)
+\end{align*}
+\(f\) can be shown to be Lipschitz in \(\theta\), whenever \(\nabla\Gamma\) is Lipschitz. 
+In this case 
+\begin{align*}
+    f(\theta,\xi_t)=-G \xi_t\xi_t^\intercal\nabla\Gamma(\theta)+o(\epsilon),\ \lim_{T\to\infty} \int_0^T f(\theta,\xi_t)=-G\nabla\Gamma(\theta)+o(\epsilon)
+\end{align*} 
+
+
