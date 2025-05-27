@@ -1,0 +1,76 @@
+\chapter{Value and \(Q\)-Function approximation}
+
+\section{A very short crash course in machine learning}
+
+\dhighlight{How can we represent functions?}
+
+Goal: \[h(x)=\sum_{i=1}^d \theta_i \psi_i(x).\]
+We could also use neural networks, or kernels: \marginnote{For more informatiom about kernels, you can look at my lecture notes for scientific computing 2 (also held by Garcke)}
+\[h(x)=\sum_{i=1}^d\theta_ik(x,x_i)\]
+\[K_{ij}=k(x_i,x_j)\]
+is a positive (semi)-definite matrix for each dataset.
+
+\begin{enumerate}
+    \item We need a way to represent a function \(h\in \mathcal{H}\)\begin{itemize}
+        \item linear
+        \item neural networks 
+        \item piecewise polynomials 
+        \item kernels
+    \end{itemize}
+    \item loss \(\Gamma(h),\ \Gamma(h)=\Gamma(h(z_1),h(z_2),\dots,h(z_N))\) evaluated at some samples \(z_i,\ 1\leq i\leq N\)
+    \item algorithm to obtain \(\argmin_{h\in \mathcal{H}}\Gamma(h)\)
+
+        Training data \(\{(z_i,y_i)\}_{i=1}^N\), \(y_i=h^\star(z_i)+\epsilon_i\),
+        \[\Gamma(h)=\frac{1}{N}\sum_{i=1}^N \left(y_i-h(z_i)\right)^2\]
+\end{enumerate}
+We usually use \dhighlight{regularization} to avoid \dhighlight{overfitting}.
+
+\dhighlight{Always} reserve samples for evaluating the quality of the prediction. 
+
+\section{Reinforcement Learning}
+\[\mathcal{D}_{k+1}(Q^\theta)=-Q^\theta(x(k),u(k))+c(x(k),u(k))+\underbrace{\underbar{Q}^\theta(x(k+1))}_{\substack{=\min_u Q^\theta(x,u)\\ \text{or }Q^\theta(x(k+1),\phi(x(k+1)))}}\]
+We have a sequence of state-action pairs 
+\[\{\underbrace{x(k),u(l)}_{z_k}\mid 0\leq k\leq N\}\]
+\begin{align*}
+    \Gamma(h)=\frac{1}{N}\sum_{k=1}^{N}D_k(h(z_k),h(z_{k+1}))^2
+\end{align*}
+where \[D(h(z_k),h(z_k+1))\coloneqq -h(x(k-1),u(k-1))+c(x(k-1),u(k-1))+\underbar{h}(x(k))\]
+with \(\underbar{h}(x)=\min_{u}h(x,u)\).
+
+\begin{align*}
+    Q^\theta(x,u)=\theta^\intercal \Psi(x,u),\ \theta\in\R^d
+\end{align*}
+and \(\Psi\) a collection of basis functions \(\psi_i\). Write 
+\begin{align*}
+  \gamma_k&=c(x(k),u(k))\\ 
+  \tilde{\gamma}_{k+1}&=\Psi(x(k),u(k))-\Psi(x(k+1),\phi(x(k+1))).  
+\end{align*}
+Rewrite \(D_{k+1}(Q^\theta)\) as \marginnote{Since \(D_{k+1}(Q^\theta)\) will be small ...}
+\begin{align*}
+    \gamma_k=\tilde{\gamma}_{k+1}^\intercal\theta+\underbrace{D_{k+1}(Q^\theta)}_{\coloneqq \epsilon_k}
+\end{align*}
+This looks like a regression problem:
+\begin{align*}
+    \Gamma(\theta)=\lim_{N\to\infty}\frac{1}{N}\sum_{k=0}^{N-1}\left[\underbrace{\gamma_k-\tilde{\gamma}_{k+1}^\intercal\theta}_{=D_{k+1}(Q^\theta)}\right]^2
+\end{align*}
+Look for \(\theta^\star=\argmin_{\theta}\Gamma(\theta)\).
+
+\subsection{Algorithm: Least Squares Temporal Difference Learning (LSTD)}
+
+For a given \(d\times d\) regularization matrix \(W\), \(W\) psd, integer \(N\), and 
+obtained samples \(\{(x(k),u(k))\mid 0\leq k\leq N\}\), the minimizer is obtained.
+\begin{equation}\label{eq:theta_lstd}
+    \theta_{N}^{\text{LSTD}}=\argmin_\theta \Gamma_N(\theta),\ \Gamma_N(\theta)=\theta^\intercal W \theta+\frac{1}{N}\sum_{k=0}^{N-1}\left[\gamma_k-\tilde{\gamma}_{k+1}^\intercal (\theta)\right]^2
+\end{equation}
+\begin{align*}
+    Q^{\theta_N^\text{LSTD}}=\sum_{i=1}^d\theta_N^{\text{LSTD}}(i\psi(i))
+\end{align*}
+is the approximation of the \(Q\)-function.
+
+We have a positive definite quadratic objective, so the solution to (\ref{eq:theta_lstd})
+can be obtained by solving for \(\nabla\Gamma(\theta)\stackrel{!}{=}0\).
+\begin{proposition}\label{prop:46}
+    Define \(R_N=\frac{1}{N}\sum_{i=1}^N\tilde{\gamma}_k\tilde{\gamma}_k^\intercal,\ \bar{\psi}_N^\gamma=\frac{1}{N}\sum_{k=0}^{N-1}\tilde{\gamma}_{k+1}\gamma_k\).
+    Then \(\theta_N^\text{LSTD}=\left[\frac{1}{N}W+R_N\right]^{-1}\bar{\Psi}_N^\gamma\)
+\end{proposition}
+The regularization \(W\) is introduced to ensure a unique solution.

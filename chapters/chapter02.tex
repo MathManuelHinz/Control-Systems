@@ -706,7 +706,7 @@ Reminder, \highlight{drift condition}
 There exists a continuous function \(V:\R^d\to\R\), and constants
 \(c_0>0,\delta_0\) s.t. for any initial condition \(\vartheta_0\) of the ODE 
 and \(0\leq T\leq 1\) it holds for \(\Vert \vartheta_s\Vert>c_0\), that \marginnote{\(V\) is strictly decreasing in that setting}
-\[V(\vartheta_{s+T})-V(\vartheta_s)\leq -\delta_0\int_0^T\Vert  \vartheta_t\Vert dt.\]
+\[V(\vartheta_{s+T})-V(\vartheta_s)\leq -\delta_0\int_0^T\Vert  \vartheta_{s+t}\Vert dt.\]
 The Lyapunov function \(V\) is Lipschitz continuous with constant \(L_V\).  
 
 %not the assumption anymore
@@ -848,5 +848,50 @@ In this case
 \begin{align*}
     f(\theta,\xi_t)=-G \xi_t\xi_t^\intercal\nabla\Gamma(\theta)+o(\epsilon),\ \lim_{T\to\infty} \int_0^T f(\theta,\xi_t)=-G\nabla\Gamma(\theta)+o(\epsilon)
 \end{align*} 
+\markeol{12}
+\beginlecture{13}{27.05.2025}
+\begin{proposition}[Global constitency]\label{prop:45}
+    Suppose that the following hold for \(\Gamma\) and the 
+    algorithm parameters in QSGD\#3
+    \begin{enumerate}\marginnote{Control on both sides of the loss function ...}
+        \item (QSA1) holds 
+        \item The probing signal satisfies \[\int_0^T\xi_t\xi_t^\intercal dt=\Id\]
+        \item \(\nabla\Gamma\) is globally Lipschitz continuous, and \(\Gamma\) is strongly convex with unique minimizer \(\theta^\star\in\R^d\)
+        \item the corresponding QSA-ODE is ultimately bounded
+    \end{enumerate}
+    Then there exists \(\bar{\epsilon}>0\) s.t. for all \(\epsilon\in (0,\bar{\epsilon})\) there is a 
+    unique root \(\theta_\epsilon^\star\) of \(\bar{f}_\epsilon\), satisfying \[\Vert \theta_\epsilon^\star-\theta^\star\Vert=O(\epsilon)\]
+    Moreover, convergence holds from each initial condition:
+    \[\lim_{t\to\infty}\theta_t=\theta_\epsilon^\star\]
+\end{proposition}
+\begin{proof}
+    The assumptions imply that (QSA2) holds for \marginnote{Exploid \(\nabla\Gamma\) is convex}
+    \begin{align*}
+        f(\theta,\xi)&=-G\xi\xi^\intercal\nabla\Gamma(\theta)+O(\epsilon)\\
+        \bar{f}_\epsilon(\theta)&=\lim_{T\to\infty}\frac{1}{T}\int_0^T f(\theta,\xi)dt
+    \end{align*} 
+    \(\Gamma\) is strongly convex, therefore there is an \(\epsilon_0>0\) s.t.
+    there is a unique solution to \(G\nabla\Gamma(\theta)=z\), whenever \(\Vert z\Vert\leq \epsilon_0\).
+    From this (QSA3, the asymptotic stability condition), can be established for \(\epsilon>0\) small enough.
+
+    Theorem \ref{thm:39} yields that for each \(\epsilon>0,\theta_t\) converges to the unique root
+    \(\theta_\epsilon^\star\) of \(\bar{f}_\epsilon\) satisfying \[\Vert \nabla\Gamma(\theta_\epsilon)\Vert = O(\epsilon)\]
+    Ffrom there, strong convexity gives 
+    \begin{align*}
+        \Gamma(\theta^\star)\geq \Gamma(\theta_\epsilon^\star)+\nabla\Gamma(\theta_\epsilon^\star)^\intercal(\theta^\star-\theta_\epsilon^\star)+\frac{\eta}{2}\Vert \theta_\epsilon^\star-\theta^\star\Vert^2
+    \end{align*}
+    for some \(\eta>0\).
+    \begin{align*}
+        \frac{\eta}{2}\Vert \theta_\epsilon^\star-\theta^\star\Vert^2&\leq \underbrace{\Gamma(\theta^\star)-\Gamma(\theta_\epsilon^\star)}_{\leq 0}+\nabla\Gamma(\theta_\epsilon^\star)^\intercal(\theta^\star-\theta_\epsilon^\star)\\
+        &\leq \Vert \nabla\Gamma(\theta_\epsilon^\star)\Vert \Vert \theta^\star-\theta_\epsilon^\star\Vert 
+    \end{align*}
+    which gives \[\Vert \theta_\epsilon^\star-\theta_\epsilon\Vert^2=O(\epsilon).\qedhere\]
+\end{proof}
+
+\begin{remark}
+    For the exam: About the structure of the proof / is it long / technical / which results does it use?
+\end{remark}
 
 
+
+\markeol{13}
