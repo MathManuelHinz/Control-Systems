@@ -56,7 +56,7 @@ This looks like a regression problem:
 Look for \(\theta^\star=\argmin_{\theta}\Gamma(\theta)\).
 
 \subsection{Algorithm: Least Squares Temporal Difference Learning (LSTD)}
-
+\marginnote{One of three streams in RL}
 For a given \(d\times d\) regularization matrix \(W\), \(W\) psd, integer \(N\), and 
 obtained samples \(\{(x(k),u(k))\mid 0\leq k\leq N\}\), the minimizer is obtained.
 \begin{equation}\label{eq:theta_lstd}
@@ -72,5 +72,129 @@ can be obtained by solving for \(\nabla\Gamma(\theta)\stackrel{!}{=}0\).
 \begin{proposition}\label{prop:46}
     Define \(R_N=\frac{1}{N}\sum_{i=1}^N\tilde{\gamma}_k\tilde{\gamma}_k^\intercal,\ \bar{\psi}_N^\gamma=\frac{1}{N}\sum_{k=0}^{N-1}\tilde{\gamma}_{k+1}\gamma_k\).
     Then \(\theta_N^\text{LSTD}=\left[\frac{1}{N}W+R_N\right]^{-1}\bar{\Psi}_N^\gamma\)
-\end{proposition}
+\end{proposition}  % 1/n wrong? No 1/n infront of W initially
 The regularization \(W\) is introduced to ensure a unique solution.
+\markeol{13}
+\beginlecture{14}{03.06.2025}
+\begin{proposition}[Redundant Parametrization]\label{prop:47}
+    Suppose that \(R_N=\frac{1}{N}\sum_{i=1}^N\tilde{\gamma}_k\tilde{\gamma}_k^\intercal\) has rank less 
+    than \(d\). Then there is a non zero vector \(v\in\R^d\) for which the following two statements 
+    hold for each \(0\leq k\leq N-1\):
+    \begin{enumerate}
+        \item[(i)] For any \(\theta\in\R^d\) and \(r\in \R\): \[D_{k+1}(Q^\theta)=D_{k+1}(Q^{\theta'}),\] where \(\theta'=\theta+rv.\)
+\marginnote{(i) really is about the interplay of recorded respones and our representation and not about an identification problem in the statistical sense.}
+        \item[(ii)] From the on-policy implementation \(u(k)=\psi(x(k))\) \[v^\intercal \Psi(x(0),u(0)) = v^\intercal\Psi(x(k),u(k)).\] 
+    \end{enumerate} 
+\end{proposition}
+\begin{proof}
+\(R_N\) does not have full rank, therefore there exists \(v\neq 0\) s.t. 
+\begin{align*}
+    0=v^\intercal R_Nv=\frac{1}{N}\sum_{i=1}^N(v^\intercal \tilde{\gamma}_k)^2.
+\end{align*}        
+Therefore, \(v^\intercal \tilde{\gamma}_k=0\) for every observed sample.
+\begin{equation}\label{eq:proof_p47}
+    0=v^\intercal \Psi(x(k),u(k))-v^\intercal \Psi(x(k+1),\phi(x(x+1))),\ 0\leq k\leq N-1
+\end{equation}
+
+So, \begin{align*}
+    D_{k+1}(Q^{\theta'})&=-Q^{\theta'}(x(k),u(k))+c(x(k),u(k)) +Q^{\theta'}(x(k+1),\phi(x(k+1)))\\
+    &=c(x(k),u(k))+\left[\theta+rv\right]\left[-\Psi(x(k),u(k))+\Psi(x(k+1),\phi(x(k)))\right]\\
+    &\stackrel{\ref{eq:proof_p47}}{=}c(x(k),u(k))+\theta \left[-\Psi(x(k),u(k))+\Psi(x(k+1),\phi(x(k)))\right],
+\end{align*}
+which yields (i).
+
+If \(u(k)=\phi(x(k))\), use (\ref{eq:proof_p47})
+\begin{align*}
+    v^\intercal \Psi(x(k),u(k))=v^\intercal\Psi(x(k+1),u(k+1))
+\end{align*}
+repeated use for every \(k\) gives (ii).
+
+\end{proof}
+
+To avoid the convergence of the \(\Gamma(\theta)\to 0\) for long trajectories,
+one can do restarts.
+
+\subsection{Algorithms: LSTD-Learning with restarts}
+For a given \(d\times d\) matrix \(W>0\), integers \(N,M\), and 
+observed samples \[\left\{x^i(k),u^i(k)\mid 0\leq k\leq N,1\leq i\leq M\right\}\]
+with user defined initial conditions \[\{x^i(0)\mid 1\leq i\leq M\}\]
+and with action \marginnote{It is fine not to probe at all} \[u^i(k)=\tilde{\phi}(x^i(k),\xi^i(k))\]
+the approximation \(Q^{\theta_N^{\text{LSTD}}}=\Psi^\intercal\theta_N^{\text{LSTD}}\)
+is obtained. Here 
+\[\theta_N^\text{LSTD}=\argmin_\theta \Gamma_N^i(\theta),\ \Gamma_N(\theta)=\frac{1}{M}\sum_{i=1}^M\Gamma_N^i\]
+and 
+\[\Gamma_N^i(\theta)=\theta^\intercal W \theta +\sum_{i=1}^{N-1}\left[\gamma_k^i-\xi\tilde{\gamma}_{k+1}^{i\intercal} \theta\right]\] % TODO: Check
+
+\begin{remark} % TODO: Check
+    The LSTD algorithm can be formulated as a recursive algorithm 
+    \[\theta_{N+1}=\theta_N+G_N\tilde{\gamma}_{N+1}(\gamma_N-\tilde{\gamma}_{N+1}\theta_N)\]
+    where \begin{align*}
+        G_{N+1}&=G_N-\frac{1}{K_{N+1}}G_N\tilde{\gamma}_{N+1}\tilde{\gamma}_{N+1}G_N\\
+        K_{N+1}&=1+\tilde{\gamma}_{N+1}^\intercal G_N \tilde{\gamma}_{N+1}
+    \end{align*}
+\end{remark}
+
+\subsection{Galerkin relaxation}
+
+Basis \(\{\psi_i\},h^\theta(z)=\sum_{i=1}^d \theta_i\psi_i(z)\), we want \(0\stackrel{!}{=}\nabla_\theta \Gamma(h^\theta)\).
+
+For Bellmann error 
+\begin{align*}
+    0&=\frac{1}{N}\sum_{k=1}^ND_k(h^\theta(z_k),h^\theta(z_{k+1}))\zeta^\theta(k)\\
+    \zeta^\theta(k)&=\nabla_\theta D_k(h^\theta(z_k),h^\theta(z_{k+1}))
+\end{align*}
+Alternative is so-called Galerkin-relaxation, We construct a sequence \(\{\zeta(k)\},\ \zeta(k)\in \R^{d_\zeta}\)\marginnote{constraints}
+\begin{align*}
+    0&=\frac{1}{N}\sum_{k=1}^ND_{k}(h^\theta(z_k),h^\theta(z_{k+1}))\zeta_i(k)\ 1\leq i\leq d_\zeta
+\end{align*}
+We relax \(D_k(h^{\theta}(z_k),h^\theta(z_{k+1}))=0\ \forall k\)
+\begin{center}
+    \(\{\zeta(k)\}\) are called eligibility vectors in RL. 
+\end{center}
+\marginnote{One can introduce them in at least one other way ...}
+
+\(\zeta(k)\) does not depend on \(\theta\), \(\zeta(k)\neq \zeta^\theta(k)\),
+\textit{maybe} \(\zeta(k)\approx \zeta^\theta(k),\theta\in\) \textit{region of interest}.
+It can make sense to have \(d_\zeta=d,\) if \(\theta\in \R^d\).
+
+\section{Projected Bellman equation}
+
+Consider \(h^\star=T(h^\star)\). \marginnote{Motivated by the solution of the Bellmann equation}
+
+Reminder \(Q^n(x,u)=c(x,u)+Q^n(x^+,u^+)\), where \(x^+=F(x,u),\ u^+=\phi(x^+)\). In our notation \(Q^\theta(x,u)\):
+
+\begin{align*}
+    T(h)\restrict{(x,u)}=c(x,u)+h(x^+,u^+),
+\end{align*}
+
+so \(Q^\theta=T\left(Q^\theta\right)\). Consider an approximation in a function class \(\mathcal{H}\).
+\begin{equation}\label{eq:bellman_projection}
+    \hat{h}=\hat{T}(\hat{h})=P_{\mathcal{H}}(T(\hat{h}))
+\end{equation}
+
+with \(P_\mathcal{H}(h)\in\mathcal{H}\) for \(h\in \mathcal{H}\).
+
+Or, consider a second function class \(\mathcal{G}\) and solve 
+for \(\hat{h}\in \mathcal{H}:\)
+\begin{equation}\label{eq:bellman_projection2}
+    0=P_\mathcal{G}(\hat{h}-T(\hat{h}))
+\end{equation}
+
+\begin{proposition}\label{prop:48}
+    Suppose that the following hold
+    \begin{enumerate}
+        \item[(i)] \(\mathcal{H}=G\)
+        \item[(ii)] \(\mathcal{H}\) is a linear function class, i.e. \(a_1h_1+a_2h_2\in\mathcal{H}\) for \(h_1,h_2\in\mathcal{H},\ a_1,a_2\in\R\) 
+        \item[(iii)] The mapping \(P_\mathcal{H}\) is linear. For  \(h_1,h_2\in \cH,\ a_1,_2\in \R\): \[P_\cH(a_1h_1+a_2h_2)=a_1P_\cH(h_1)+a_2P_\cH(h_2)\]
+    \end{enumerate}
+    Then the solution to (\ref{eq:bellman_projection}) and (\ref{eq:bellman_projection2}) coincide.
+
+
+
+\end{proposition}
+
+
+
+
+\markeol{14}
+
