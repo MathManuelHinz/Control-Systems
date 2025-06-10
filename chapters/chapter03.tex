@@ -188,13 +188,131 @@ for \(\hat{h}\in \mathcal{H}:\)
         \item[(iii)] The mapping \(P_\mathcal{H}\) is linear. For  \(h_1,h_2\in \cH,\ a_1,_2\in \R\): \[P_\cH(a_1h_1+a_2h_2)=a_1P_\cH(h_1)+a_2P_\cH(h_2)\]
     \end{enumerate}
     Then the solution to (\ref{eq:bellman_projection}) and (\ref{eq:bellman_projection2}) coincide.
+\end{proposition}
+\markeol{14}
+\beginlecture{15}{05.06.2025}
 
+\begin{proof}
+    Trivial
+\end{proof}
 
+We assume for \(g\in G\): \(g:Z\to\R\), and \(G\) is a linear function class. We further assume 
+there is a state-process \(\Phi\) on \(Z\), where \((x(k),u(k),\xi(k))=w(\Phi(k))\), where \(w\)
+is Lipschitz. We define for a probability measure \(\omega\) with density \(\rho\)
+\[\langle h_1,h_2\rangle_\omega=\bE_\omega(h_1(\Phi),h_2(\Phi))=\int_Z h_1(z)h_2(z)\rho(z)dz\] 
+\[\Vert h\Vert_\omega=\sqrt{\langle h,h\rangle_\omega}.\]
 
+\[L_2(\omega)=\{h\mid \Vert h\Vert_\omega<\infty\}.\] %TODO: FIX
+
+For any \(h\in L_2(\omega)\), we define projection onto \(G\) as
+\[\hat{h}=P_G(h)=\argmin_{g\in G}\{\Vert g-h\Vert_\omega\}.\]
+For \(\hat{h}\in G\)
+\[\langle h-\hat{h},g\rangle_\omega=0,\ g\in G\]
+In particular, we assume that \(G\) has finite dimension. We choose \(d\) functions 
+\[\{\zeta_i\mid 1\leq i\leq d\}\] \marginnote{We do not assume that \(d\) is the dimension of \(G\) in general}
+stack them to get \(\zeta:Z\to\R^d\) and define \(G\{g=\theta^\intercal\zeta\mid \theta\in\R^d\}\).
+\(\zeta(k)\coloneqq \zeta(\Phi(k))\) is the sequence of \dhighlight{eligibility vectors}.
+
+\begin{proposition}\label{prop:49}
+    Suppose that \(\zeta_i\in L_2(\omega)\) for each \(i\) and that the functions are linear independent in \(L_2^\omega\).
+    That is \(\Vert \zeta^\intercal\zeta\Vert_\omega=0\). For each \(h\in L_2(\omega)\), the projection exists, is unique,
+    and given by \[\hat{h}=(\omega^\star)^\intercal\zeta\]
+    with  \(\theta^\star=[R^\zeta]^{-1}\bar{\psi}^h,\) \(\bar{\psi}^h\in \R^d,\bar{\psi}_i^h=\langle\zeta_i,h\rangle_\omega\)
+    \(\R^zeta\in\R^{d\times d},R_{ij}^\zeta=\langle \zeta_i,\zeta_j\rangle_\omega\).
 \end{proposition}
 
+\begin{proof}[Sketch]
+    The orthogonality principle gives 
+    \begin{align*}
+        \langle h-\hat{h},\zeta_i\rangle_\omega&=0
+    \end{align*}
+    we use this identity with \(\hat{h}=(\theta^\star)^\intercal \zeta\)
+\end{proof}
 
+\begin{proposition}\label{prop:50}
+    \(0=P_G(\hat{h}-T(\hat{h}))\) holds if and only if 
+    \[0=\langle \zeta_i,\hat{h}-T(\hat{h})\rangle_\omega 1\leq i\leq d.\]
+    This is the \dhighlight{Galerkin relaxation} of \(h^\star=T(h^\star)\) in the \(L_2(\omega)\) setting.\marginnote{We saw this last time as well}
+\end{proposition}
 
+Consider \(\cH=\{h=\theta^\intercal \psi\mid \theta\in\R^d\},\) where \(\psi:X\times U\to \R\) \marginnote{\(\psi\) like a \(Q\)-function}.
+Now, we use the above on the Bellman operator.
+\begin{align*}
+    0=\bE(\zeta_i(k)(\hat{h}(x(k),u(k))-[c(x(k),u(k))+\hat{h}(x(k+1),\phi(x(k+1)))]))
+\end{align*}
 
-\markeol{14}
+Solutions of this root finding problem define \(Q^{\theta^\star}\in \cH\).
 
+Recall \(D_{k+1}\), we can write equivalently
+\begin{align*}
+    0=\bE(\zeta(k)D_{k+1}(Q^{\theta}))\restrict{\theta=\theta^\star}.
+\end{align*}
+
+Given \(N\) observations, we approximate this by \marginnote{More concrete Galerkin estimation}
+\[0=\frac{1}{N}\sum_{k=0}^{N-1}\zeta(k)D_{k+1}(Q^\theta)\restrict{\theta=\theta^\star}.\]
+
+\subsection{Algorithm: TD\((\lambda)\)}\marginnote{This was introduced differently, maybe we will also see this later. In all there are three views}
+% FIX phi and psi
+Notation: \(\psi_{(k)}=\psi(x(k),u(k))\), \(c(k)=c(x(k),u(k))\), \(\zeta_k=\zeta(k)\)
+
+For a given \(\lambda\in [0,1]\), nonnegative step size sequence \(\{\alpha_n\}\),
+initial conditions \(\theta_0,\zeta_0\) and observed samples \(\{x(k),u(k)\mid 0\leq k\leq N\}\),
+the sequence of estimates is defined by three coupled equations
+\begin{align*}
+    \theta_{n+1}&=\theta_n+\alpha_{n+1}D_{n+1}\zeta_n\\
+    D_{n+1}     &= -Q^{\theta_n}(x(n),u(n))+c_n-Q^{\theta_n}(x(n+1),\phi(x(n+1)))\\
+    \zeta_{n+1} &= \lambda \zeta_{n}+\psi_{(n+1)}
+\end{align*}
+
+This defines the approximation of the \(Q\)-function \(Q^{\theta_n}=\sum_{i=1}^d(\theta_N)_i\phi_i\).
+
+We extend the state process 
+\[\Phi(k)=(x(k),u(k),\xi(k),\zeta(k)).\]
+This means that \(\zeta(k)\) is a linear function of the state process \(\Phi(k)\).
+
+Denote \(\bar{f}_\lambda(\theta)=\bE_\omega\left[\zeta(k)D_{k+1}(Q^\theta)\right]\). TD\((\lambda)\)
+is an approximation of the ODE 
+\begin{eqnarray}\label{eq:tdlambda_ode}
+    \frac{d}{dt}\vartheta=\bar{f}_\lambda(\vartheta)
+\end{eqnarray}
+
+\(\bar{f}_\lambda(\theta)=A(\theta-\theta^\star)\), where 
+\(A=\bE_\omega\left[\zeta(k)\left[-\psi_{(k)}+\psi(x(k+1),\phi(k+1))\right]^\intercal\right]\).
+
+For linear systems QSV-assumptions can be shown if all eigenvalues of the systemmatrix have 
+strictly negative real parts,  i.e. \(A\) is Hurwitz.
+
+This can be shown for the on-policy approach, so the algorithm converges. There is a counter example in the book
+if we are off-policy., so convergence of TD\((\lambda)\) is not guaranteed in the off-policy setting.
+
+\subsection{Algorithm TD\((\lambda)\)-learning with nonlinear function approximation}
+
+In the setup as before in TD\((\lambda)\), \(\theta_{n+1},D_{n+1}\) are 
+as for the linear case.
+\begin{align*}
+    \zeta_{n+1}&=\lambda\zeta_{n}+\zeta_{n+1}^0\\
+    \zeta_{n+1}^0&=\nabla_\theta Q^\theta(x(n),u(n))\restrict{\theta=\theta_n}  
+\end{align*}
+
+Observe that \(\zeta_n^0=\Psi_{(n)}\) for a linear function class, so this is a consistent 
+generalization.
+\marginnote{\(\lambda=0\) means we don't have a history at all! TD\(\lambda\) is for a fixed policy}
+
+To extend, we use instead of the so far fixed policy \(\phi\)
+\[\phi_{(n)}^\theta=\argmin_{u} Q^\theta(x,u)\]
+\subsection{Algorithm: \(Q\)-learning}
+The change in comparison to TD\((\lambda)\) is  
+\[D_{n+1}(Q^{\theta_n})=-Q^{\theta_n}(x(n),u(n))+c(k)-Q^{\theta_n}(x(n+1),\phi^{\theta_{n+1}})\]
+A limit \(\theta^\star\) will save \(\bar{f}(\theta^\star)=0\) with 
+\[\bar{f}(\theta) = \bE_\omega\left[\zeta(k),D_{k+1}(Q^\theta)\right].\]
+
+At first glance this looks as for TD\((\lambda)\), but the last term of the update to \(D_{n+1}\)
+is different! For \(\lambda=0\), we can apply proposition \ref{prop:48} to conclude that 
+\(Q^{\theta^\star}\) solves 
+\[Q^{\theta^\star}=P_\cH(T(Q^{\theta^\star})),\]
+where \(T(Q)\restrict{(x,u)}=c(x,u)+\min_{u^+}Q(x^+,u^+)\) and \(x^+=F(x,u)\).
+
+Theory for existence of a solution or stability (in the sense of global asymptotic stability)
+is so far lacking in the context of ODE analysis.
+
+\markeol{15}
