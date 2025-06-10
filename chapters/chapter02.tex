@@ -513,7 +513,7 @@ The following assumptions will be used in the following:
 \end{enumerate}
 Consider first, arbitrary \(\theta\)
 \begin{lemma}\label{lem:37}
-    \marginnote{There is a connect to the law of large numbers ...}
+    \marginnote{There is a connection to the law of large numbers ...}
     Assume (QSA1), (QSA2) hold for any fixed \(T>0\) and \(\theta\in\R^d\).
     \begin{align*}
         \left\Vert\int_{\tau}^{\tau+T}\left[f(\theta,\xi(s^{-1}(w)))-\bar{f}(\theta)\right]dw \right\Vert\leq b_0(\theta)\epsilon_\tau^f,
@@ -722,9 +722,9 @@ whenever \(\Vert \vartheta_t\Vert >c_0\).
     \[V(\thetahat_{\tau+T})-V(\thetahat_\tau)\leq -\delta_1\Vert \thetahat_\tau\Vert\]
     for all \(\tau\geq \tau_0\), \(\Vert\thetahat_\tau\Vert>b\). Then the solution 
     to the time-scaled ODE 
-    \begin{align*}\label{eq:ts-ode}
+    \begin{equation}\label{eq:ts-ode}
         \frac{d}{d\tau} \thetahat_\tau = f(\thetahat(s^{-1}(\tau)),\xi(s^{-1}(\tau)))
-    \end{align*}
+    \end{equation}
     is ultimately bounded. 
 \end{lemma}
 
@@ -817,7 +817,8 @@ We had \begin{align*}
     \lim_{T\to\infty}\frac{1}{T}\int_0^T \xi_t dt=0,\ \lim_{T\to\infty}\frac{1}{T}\int_0^T \xi\cdot \xi^\intercal dt=Id
 \end{align*}
 % ALGO 
-\dhighlight{Quasi sotchastic gradient descent \#1: qSGD \#1}
+
+\subsection{Algorithm: quasi Stochastic Gradient Descent \#1: qSGD \#1}
 
 \textbf{Input:} \(d\times d\) pos. def. matrix G, \(\thetatilde_0\in \R^d\)
 
@@ -833,11 +834,10 @@ If\(\Gamma\in C^2\):
     \underbrace{\lim_{T\to\infty}\frac{1}{T}\int_0^Tf(\theta,\xi_t)dt}_{\bar{f}_\epsilon(\theta)}&=0-G\nabla\Gamma(\theta)+O(\epsilon) 
 \end{align*}
 
-
 For \(G=\Id\) qSGD\#1 will approximate the steepest descent algorithm. In (QSA2) we assumed that 
 \(f, \bar{f}\) are Lipschitz, but while \(\nabla\Gamma\) usually is Lipschitz, \(\Gamma\) often is not!
 
-\dhighlight{Algorithm qSDG \#3}
+\subsection{Algorithm: qSDG \#3}
 
 For a given \(d\times d\) pos. def. matrix \(G\) and \(\thetatilde_0\in\R^d\)
 \begin{align*}
@@ -850,7 +850,7 @@ In this case
 \end{align*} 
 \markeol{12}
 \beginlecture{13}{27.05.2025}
-\begin{proposition}[Global constitency]\label{prop:45}
+\begin{proposition}[Global consistency]\label{prop:45}
     Suppose that the following hold for \(\Gamma\) and the 
     algorithm parameters in QSGD\#3
     \begin{enumerate}\marginnote{Control on both sides of the loss function ...}
