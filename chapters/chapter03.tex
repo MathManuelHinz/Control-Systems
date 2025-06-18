@@ -316,3 +316,111 @@ Theory for existence of a solution or stability (in the sense of global asymptot
 is so far lacking in the context of ODE analysis.
 
 \markeol{15}
+\section{Deep Q-Networks and Batch methods}
+\beginlecture{16}{17.06.2025}
+Instead of the purely recursive form going over all 
+\(N\), we break this into batches  \(T_0=0<T_1<T_2<T_B=N\)
+
+\subsection{Algorithm: DQN}
+With \(\theta_0\in \R^d\) given, and a sequence of positive scalars \(\{\alpha_n\}\) we Define
+\begin{eqnarray}\label{eq:DQN_batch}
+    \theta_{n+1}=\argmin_{\theta}\Gamma_n^\epsilon(\theta)+\frac{1}{\alpha_{n+1}}\Vert \theta-\theta_n\Vert^2,\\ 0\leq n\leq B-1
+\end{eqnarray}
+where for each \(n,\ r_n=T_{n+1}-T_n\)
+\[\Gamma_n^\epsilon(\theta)=\frac{1}{2}\frac{1}{r_n}\sum_{k=T_n}^{T_{n+1}}\left[-Q^\theta(x(k),u(k))+c_k+\underbar{Q}^{\theta_n}(x(k+1))\right]^2\]
+where \(\underbar{Q}^{\theta_n}(x)\coloneqq Q^{\theta_n}(x,\phi^{\theta_n}(x))\).
+
+We collect some natural properties which hold for linear and nonlinear scenarios.
+% TODO : FIx all sums
+\begin{proposition}\label{prop:51}
+    Suppose that \(\{Q^\theta(x,u)\mid \theta\in \R^d\}\) is continuously differentiable in \(\theta\)
+    for each \(x,u\). Then 
+    \begin{enumerate}
+        \item The solution to \ref{eq:DQN_batch} solves thef fixed point equation \[\theta_{n+1}=\theta_n+\alpha_{n+1}\frac{1}{r_n}\sum_{k=T_n}^{T_{n+1}}\left[-Q^\theta(x(k),u(k))+\gamma_n(k)\right]+\nabla_\theta Q^\theta(x(k),u(k))\restrict{\theta=\theta_{n+1}}\] with \(\gamma_n(k)=c_k+\underbar{Q}^{\theta_n}(x(k+1))\)
+        \item if the parametrization is linear, so that \[\nabla_\theta Q^\theta(x(k),u(k))=\Psi_{(k)},\] then \[\theta_{n+1}=\theta_n+\alpha_{n+1}\left[A_n\theta_{n+1}-b_n\right]\] with \(A_n=-\frac{1}{r_n}\sum_{k=T_n}^{T_{n+1}-1}\Psi_{(k)}\Psi_{(k)}^\intercal,\ b_n=-\frac{1}{r_n}\sum_{k=T_n}^{T_{n+1}-1}\gamma_n(k)\Psi_{(k)}\). 
+    \end{enumerate}
+\end{proposition}
+
+In this can we can rearrange and invert \[\theta_{n+1}=\left[I-\alpha_{n+1}A_n\right]^{-1}(\theta_n-\alpha_{n+1}b_n).\]
+For \(\alpha\) small enough, we can observe that \[\left[I-\alpha_{n+1}A_n\right]^{-1}\approx I+\alpha_{n+1}A_n\]
+which gives
+\begin{align*}
+    \theta_{n+1}&\approx [I+\alpha_{n+1}A_n](\theta_n-\alpha_{n+1}b_n)\\
+                &\approx \theta_n+\alpha_{n+1}(A_n\theta_n-b_n)
+\end{align*}
+Similarly, we aim for  an approximation in the nonlinear case. For \(Q^\theta\in C^1\), we have 
+\(\Vert \theta_{n+1}-\theta_n\Vert\leq K \alpha_{n+1}\) for some  fixed \(K<\infty\), whenever \(\{\theta_n\}\)
+is bounded. Consequently, \[\theta_{n+1}=\theta_n+\alpha_{n+1}\frac{1}{r_n}\sum_{k=T_n}^{T_{n+1}-1}\left[-Q^\theta(x(k)u(k))+\gamma_n(k)+\epsilon_{n+1}\right]+\nabla_\theta Q^{\theta_n}(x(k),u(k)),\]
+where \(\Vert \epsilon_{n+1}\Vert =O(\alpha_{n+1})\).
+
+\subsection{Algorithm: Batch \(Q(0)\) learning }
+%TODO not + grad, but times ...
+With \(\theta_0\in \R^d\) given, along with \(\{\alpha_n\}\), \(\alpha_n>0\) define recursively:
+\begin{align*}
+    \theta_{n+1}&=\theta_n+\alpha_{n+1}\frac{1}{r_n}\sum_{k=T_n}^{T_{n+1}-1} D_{k+1}(\theta_n)\nabla_\theta Q^{\theta_n}(x(k),u(k))\\
+    D_{n+1}(\theta_n)&=-Q^{\theta_n}(x(k),u(k))+c_k-\underbar{Q}^{\theta_n}(x(k+1))
+\end{align*}
+
+\begin{proposition}\label{prop:52}
+    Consider the DQN algorithm with a possibly nonlinear function approximation. Assuming \(Q^\theta\in C^1\) and that its gradient is 
+    Lipschitz globally with constant independent of \((x,u)\). Suppose that \(B=\infty\), that the nonnegative \(\{\alpha_n\}\)
+    satisfy \(\sum \alpha_n=\infty,\sum \alpha_n^2<\infty\) and suppose that the \(\{\theta_n\}\) obtained by our algorithm
+    converge to a \(\theta_\infty\in \R^d\). 
+    \begin{enumerate}
+        \item \(\bar{f}(\theta_\infty)=0\) with \(\bar{f}\) as before: \[\bar{f}=\bE_\omega\left[\zeta(k)D_{k+1}(\theta)\right]\] and \(\zeta(n)=\nabla_\theta Q^\theta(x(k),u(k))\restrict{\theta=\theta_n}\)
+        \item The algorithm admits the ODE approximation \[\frac{d}{dt}\vartheta_t = \bar{f}(\vartheta_t).\]
+    \end{enumerate}  
+\end{proposition}
+
+Note, the states if we have convergence, then the behavior is consistent with the ODE view. 
+Generally, we do not know if \(\bar{f}\) as defined above has a root.  Even if we would know,
+the existence of \(bar{f}(\theta_\infty)=0\) does not tell us if the ODE  is stable,
+nor if \(\theta_\infty\) has desirable properties.
+
+\subsection{G\(Q(\lambda)\)-Learning} \marginnote{The G prob. stands for generalized}
+
+Instead of aiming for \(\bar{f}(\theta^\star)=0\), aim to 
+minimize \[\min_\theta\Gamma(\theta)=\min_\theta\frac{1}{2}\bar{f}^\intercal M \bar{f}(\theta)\]
+for some \(d\times d\) matrix \(M\) spd.
+\begin{align*}
+    \frac{d}{dt}\vartheta_t&=-\left[\partial_\theta \bar{f}(\vartheta_t)^\intercal M \bar{f}(\vartheta_t)\right]
+\end{align*}
+choosing \(M=\bE\left[\zeta_n\zeta_n^\intercal\right]^{-1}\), one can derive the 
+\dhighlight{D\(Q(\lambda)\)-Learning} algorithm. 
+
+To avoid matrix inversion, one can use a two-time scale approach: 
+
+Obtain first an ODE approximation of \(M \bar{f}\vartheta_t\) using 
+\[\frac{d}{dt}w_t=b_t\left[\bar{f}(\vartheta)-R w_t\right]\] \marginnote{This \(b\) is not the same as earlier, here it is a scalar}
+where \(R=M^{-1}\). 
+
+Provided \(\{b_t\}\) chosen very large, and \(\vartheta_t\)  is bounded, one can derive that \(w_t\approx M\bar{f}(\vartheta_t)\) after some \(t\). 
+
+\subsection{Algorithm: G\(Q(\lambda)\) Learning for linear function approximation}
+With the same starting point of \(Q(\lambda)\) and an additional initialization
+\(w_0\), we iterate:
+\begin{align*}
+    \theta_{n+1}&=\theta_n-\alpha_{n+1}A_{n+1}^\intercal w_n\\
+    w_{n+1} &=w_n+b_{n+1}(f_{n+1}(\theta_n)-\zeta_{n+1}\zeta_{n+1}^\intercal w_n)\\
+    \zeta_{n+1}&=\lambda \zeta_n+\Psi_{(n+1)}\\
+    D_{n+1}&=-Q^{\theta_n}(x(n),u(n))+c_n-\underbar{Q}^{\theta_n}(x(k+1))\\
+    f_{n+1}(\theta_n)&=D_{n+1}\zeta_{n+1},\ A_{n+1}=\partial_\theta f_{n+1}(\theta_n)=\zeta_n(-\Psi_{n}\bar{\Psi}_{n+1})^\intercal\\
+    \Psi_{(n+1)}&=\Psi(x(n+1),u(n+1)),\ \bar{\Psi}_{(n+1)}=\Psi(x(n+1),\phi^{\theta_n}(x(n+1)))
+\end{align*}
+
+The approximation is successful if \[\lim_{n\to\infty} \frac{b_n}{\alpha_n}=\infty\]
+
+\dhighlight{Problems}
+\begin{itemize}
+    \item \(\Gamma\) is not convex, so difficult to get global minima
+    \item Even if \(\bar{f}(\theta^\star)=0\) does have a solution, there are numerical challenges. Consider 
+    \begin{align*}
+        \Gamma(\theta)&=\Gamma(\theta^\star)+\underbrace{0}_{\bar{f}(\theta^\star)=0}+(\theta-\theta^\star)\left[A^\starMA^{\star\intercal}\right](\theta-\theta^\star)
+    \end{align*}
+    if \(A^\star\) has a large condition number the observed condition number is squared, so even worse. Maybe \(M\) can be chosen to 
+    avoid this.
+    \item It is not obvious why minimizing \(\Gamma(\theta)\) is a reasonable goal
+\end{itemize}
+
+
+\markeol{16}
