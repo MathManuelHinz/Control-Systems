@@ -415,12 +415,149 @@ The approximation is successful if \[\lim_{n\to\infty} \frac{b_n}{\alpha_n}=\inf
     \item \(\Gamma\) is not convex, so difficult to get global minima
     \item Even if \(\bar{f}(\theta^\star)=0\) does have a solution, there are numerical challenges. Consider 
     \begin{align*}
-        \Gamma(\theta)&=\Gamma(\theta^\star)+\underbrace{0}_{\bar{f}(\theta^\star)=0}+(\theta-\theta^\star)\left[A^\starMA^{\star\intercal}\right](\theta-\theta^\star)
+        \Gamma(\theta)&=\Gamma(\theta^\star)+\underbrace{0}_{\bar{f}(\theta^\star)=0}+(\theta-\theta^\star)\left[A^\star MA^{\star\intercal}\right](\theta-\theta^\star)
     \end{align*}
     if \(A^\star\) has a large condition number the observed condition number is squared, so even worse. Maybe \(M\) can be chosen to 
     avoid this.
     \item It is not obvious why minimizing \(\Gamma(\theta)\) is a reasonable goal
 \end{itemize}
-
-
 \markeol{16}
+\beginlecture{17}{24.06.2025}
+
+\section{Summary}
+
+To summarize, inside TD taxonomy, we have seen 
+\begin{enumerate}
+    \item[(i)] approximate PIA using LSTD or TD\((\lambda)\). We can be sure it converges under two conditions: \begin{enumerate}
+        \item linearity: the function class is linear 
+        \item the function class is complete, in the sense that we have \(Q^{\theta_n}=Q^{\psi^n}\) for each \(n\)  
+    \end{enumerate}
+    \item[(ii)] Galerkin relaxations of the dynamic programming (DP) equation are obtained using \(Q(\lambda)\)-learning, DQN or batch \(Q(\lambda)\)-learning. There theory is almost nonexistent
+    \item[(iii)] Generalized \(Q\)-learning, to obtain the minimal mean square Bellman error. 
+          We are assured success, if \(Q^\star\) lies inside our function class and the 
+          objective satisfies conditions aligned with gradient descent, e.g. the PL condition from the earlier chapter 
+\end{enumerate}
+
+\marginnote{Next couple of lecture also have parts from other books}
+
+\section{Exploration}
+
+We assume \(u(k)=\breve{\psi}(x(k),\xi(k))\), where \(\underline{\xi}\) is a 
+bounded sequence on a set \(\Omega\subset \R^p\) for some \(p>1\)
+
+We assume an autonomous state space model for \(\xi\) 
+\[\xi(k+1)=H(\xi(k)),\ H \text{ continuous}.\].
+\(\Phi(k)\coloneqq(x(k),u(k),\xi(k))\) has an analogous form in the state space \(Z\).
+
+Remember (QSA2), ergodic limit, \(Z\), average of observations. Denote for 
+\(g:Z\to\R,\ g\) continuous, \(N\geq 1\)
+\[\bar{g}_N=\frac{1}{N}\sum_{k=1}^N g(\Phi(k)).\]
+We will assume the existence of 
+\begin{equation}\label{eq:ergodic_mean}
+    E_\omega\left[g(\Phi)\right]\coloneqq \lim_{N\to\infty} \bar{g}_N.
+\end{equation}
+Often, we have \(\omega\) as a probability measure with density \(\rho\), s.t. 
+\[E_\omega(g(\Phi))=\int_Z g(z)\rho(z)dz \]
+
+\begin{lemma}\label{lem:53}
+Consider the probing signal \(\xi(k)=\sin(2\pi k/T),\ k\geq 0\), provided that \(T\) is 
+an irrational number, for any continuous function \(g:\R\to\R\) we have 
+\[\lim_{N\to\infty}\frac{1}{N}\sum_{k=1}^Ng(\xi(k))=\int_0^1g(\sin(2\pi k)dt)=\int_{-1}^1g (t)\rho(t)dt\]
+where \(\rho(t)=\left[\pi\sqrt{1-t^2}\right]^{-1}\) is known as the arcsine density.    
+\end{lemma}
+
+\begin{proof}
+    Consider \(\xi^0(k)=[k/T]_1=k/T-\lfloor k/T\rfloor\), which is the fractional part of \(k/T\).
+    \(\xi^0(k)\) samples uniformly in \([0,1]\), for continuous functions \(h:\R\to\R\) it then holds 
+    \begin{align*}
+        \frac{1}{N}\sum_{k=1}^Nh(\xi^0(k))=\int_0^1 h(r)dr
+    \end{align*}
+    with \(h(\xi^0(k))=g(\sin(2\pi \xi^0(k)))=g(\xi(k))\) the first equality follows, the second equality is 
+    standard calculus.
+\end{proof}
+
+\dhighlight{Assumption A\(\xi\):}
+
+The state and action spaces are each subsets of Euclidean space \(F:X\times U\to X\), describing \(x(k+1)=F(x(k),u(k))\) 
+\(\breve{\phi},H\) from above are continuous. The state process \(\Phi\) has the following properties 
+\begin{enumerate}
+    \item \(\Phi\) evolves on a closed subset of Euclidean space, denoted \(Z\), and \((x(k),u(k),\xi(k))=w(\Phi(k))\) 
+           for each \(k\), where \(w:Z\to X\times U\times \Omega\) is Lipschitz
+    \item there is a probability measure \(\omega\), s.t. for any continuous function \(g:Z\to\R\) the ergodic mean (\ref{eq:ergodic_mean}) exists for each initial condition 
+    \item the limit (\ref{eq:ergodic_mean}) is uniform on\[G_L\coloneqq \{g\mid\Vert g(z')-g(z)\Vert \leq L\Vert z-z'\Vert,\ \forall z,z'\in Z\}\] for each \(L<\infty\).
+        \[\lim_{N\to\infty}\sup_{g\in G_L}|\bar{g}_N-E_\omega[g(\Phi)]|=0\]
+\end{enumerate}
+
+\section{ODE approximation}
+
+Consider a recursion \begin{equation}\label{eq:recursion}\theta_{n+1}=\theta_n+\alpha_{n+1}f_{n+1}(\theta_n)\end{equation}, here \(\{f_n\}\) is a 
+sequence of functions that admit an ergodic limit 
+\[\bar{f}(\theta)\coloneqq \lim_{N\to\infty}\frac{1}{N}\sum_{k=1}^N f_k(\theta),\ \theta\in\R^d\]
+We associate an ODE 
+ \begin{equation}\label{eq:ode_approx}
+    \frac{d}{dt}\vartheta_t=\bar{f}(\vartheta_t)
+\end{equation}
+
+We can use the Euler scheme, \(\tau_0,\tau_n=\sum_{k=1}^n\alpha_k\), for \(n\geq 1\).
+To get a continuous time process, we set \(\hat{\theta}_{\tau_n}=\theta_n\) and 
+extend by piecewise linear interpolation. Let \(\{\vartheta_t^n\mid t\geq \tau_n\}\) denote the solution to 
+(\ref{eq:ode_approx}) with starting condition \(\vartheta_{\tau_n}^n=\theta_n\).
+
+The recursion (\ref{eq:recursion}) is said to admit an ODE approximation, if the error
+\[\lim_{n\to\infty}\sup_{\tau_n\leq \tau\leq \tau_n+N}\Vert \hat{\theta}_\tau-\vartheta_\tau^n\Vert=0\]
+If \(\{\theta_n\}\) is bounded, 
+convergence can be shown similar to proposition \ref{prop:38}, which allows 
+to use the ideas behind proposition \ref{thm:39}%TODO
+to establish convergence if (\ref{eq:ode_approx})
+is globally asymptotically stable.
+
+\section{Convergence rates}
+
+The rate of convergence is \(1/t^{\rho_0}\) if 
+\[\limsup_{t\to\infty} t^\rho\Vert \tilde{\theta}_t\Vert = \begin{cases}
+    \infty  & \rho>\rho_0\\ 
+    0 & \rho<\rho_0
+\end{cases}\]
+where \(\tilde{\theta}_t=\theta_t-\theta^\star\). In our context, one can achieve \(\rho_0=1\),
+which is optimal in most cases.
+
+Generally, there is an influence of the gain \(\alpha\) on the convergence. Consider, a standard 
+choice \(a_t=g/(1+t)^\rho\), where \(g>0,\ 0< \rho\leq 1\) are fixed.
+
+The time scaling \(\tau=s_t\coloneqq \int_0^t a_rdr\) results in 
+\begin{equation}\label{eq:tau_scaling}\tau=\begin{cases}
+    g\log(1+t) & \rho=1\\
+    g\frac{1}{1-\rho}(1+t)^{1-\rho} & 0<\rho < 1
+\end{cases}\end{equation} 
+
+\(\frac{d}{dt}\vartheta_t=\bar{f}(\vartheta_t)\) and assume exponential asymptotically: 
+
+there exists \(\rho_0>0\), \(B_0<\infty\) s.t. for any solution to the ODE and any \(t\geq 0\)
+\[\Vert \vartheta_t-\theta^\star\Vert\leq B_0\Vert \vartheta_0-\theta^\star\Vert \exp(-\rho_0t).\]
+Remember from  lemma \ref{lem:35} \(\frac{d}{dt}\bar{\theta}_t=a_t\bar{f}(\bar{\theta}_t)\) that 
+\(\theta_t=\vartheta_\tau,t\geq t_0\).
+
+So that \(\Vert \vartheta_\tau-\theta^\star\Vert=\Vert \bar{\theta}_t-\theta^\star\Vert\). One can 
+see two different aspects.
+
+\(\rho<1\): \(\{\bar{\theta}_t\}\) converges to \(\theta^\star\) very quickly. But, 
+the boundedness of \(\frac{1}{a_t}(\theta_t-\bar{\theta}_t)\) implies a suboptimal rate 
+\[\Vert \theta_t-\bar{\theta}_t\Vert\leq B\frac{1}{(1+t)^\rho},\]
+where \(B\) is a function of the initial condition \(\theta_0\).
+
+\(\rho=1\) the above bound is ideal, but with (\ref{eq:tau_scaling}) we can observe 
+\[\Vert \bar{\theta}_t-\theta^\star\Vert \leq B_0\Vert \bar{\theta}_0-\theta^\star\Vert \frac{1}{(1+t)^{g\rho_0}}.\]
+So the rate of convergence of \(\{\bar{\theta}_t\}\) depends on \(g\). For the optimal one \(1/t\), one needs 
+\(g\geq \frac{1}{\rho_0}\).
+
+So, \(g\) can be large, which can lead to large transients/ vector fields. By averaging
+techniques: \(\theta_T^{PR}\coloneqq \frac{1}{T-T_0}\int_{T_0}^T \theta_tdt\).
+One can achieve the optimal rate of \(1\) overall.
+
+F.s. \(T_0=T-T/5,\) averages over last 20\%.
+
+
+
+
+
+\markeol{17}
