@@ -556,8 +556,119 @@ One can achieve the optimal rate of \(1\) overall.
 
 F.s. \(T_0=T-T/5,\) averages over last 20\%.
 
-
-
-
-
 \markeol{17}
+
+\beginlecture{18}{26.06.2025}
+
+This lecture is mostly based on \cite{BartoSutton1998}
+
+
+\section{Examples of Off-policy divergence}
+
+\begin{tikzcd}
+    &\theta\arrow[r] & 2\theta\\
+    \text{values}\arrow[ru]&\text{feature 1}\arrow[u] & \text{feature 2}\arrow[u] 
+\end{tikzcd}
+
+two states, whose estimated values are \(\theta,2\theta,\theta\in \R^n\). Feature vectors 
+are \(1,2\). In state 1, only action is going to state 2 with cost 0. We consider discounted 
+\[\sum_{k=1}^\infty\gamma^kc(x(k),(k))\]
+and TD(0). Assume that \(\theta:0=10,\ \gamma\approx 1\). 
+\begin{align*}
+    \theta_{n+1}&=\theta_n+\alpha D_{n+1}\Psi_{(n+1)}\\
+    D_{n+1}&=-\underbrace{Q^{\theta_n}(x(k),u(k))}_{10}+0+\underbrace{\gamma Q^{\theta_n}(x(k),\phi)}_{20}
+\end{align*}
+If \(\alpha=0.1,\ \theta_1\approx 11\)., do it once more to get \(\theta_2\approx 12.1\)
+\begin{align*}
+    D_{n+1}(Q)&=-\theta_n+0+\gamma 2 \theta_n=(2\gamma-1)\theta_n\\
+    \theta_{n+1}&=\theta_n+\alpha(2\gamma-1)\theta_n\cdot 1=\underbrace{(1+\alpha(2\gamma-1))}_{>1 \text{ if }\gamma>0.5}\theta_n
+\end{align*}
+
+In the off-policy training, we do not follow the currently best action, whatever it may be.
+In off-policy training, one usually uses \dhighlight{importance sampling} or \dhighlight{reweighting}
+between target and behavior policy.
+
+the update becomes 
+\[\theta_{n+1}=\theta_n+\alpha\delta_n D_{n+1}\Psi_{(n+1)}\]
+with \[\delta_n=\bP\left[\frac{\text{target policy takes u at x(n)}}{\text{behavior policy takes u at x(n)}}\right]\]
+
+So \(\delta_n=0\) if \(\phi^b\) takes something, which \(\phi^t\) never would.
+
+\subsection{Baird's counter examples} 
+% FIG 11.1 add maybe?
+
+Cost is 0 on all transitions, so the true value function is constant \(0\),
+which can be achieved by \(\theta=0\), but it is not unique.\marginnote{due to our parametrization}
+
+\begin{align*}
+    \theta\in\R^n & \Psi(1)=\begin{pmatrix}
+        2\\0\\\vdots\\0\\1
+    \end{pmatrix}&\dots
+\end{align*}
+vectors linearly independent.
+
+Consider exemplarily the solid transitions 
+\begin{align*}
+    D_{n+1}&=\begin{cases}
+        -\left[\theta_n^8+2\theta_n^k\right]+\gamma\left[2\theta_n^8+\theta_n^7\right] & x(n)=k\leq 6\\
+        -\left[2\theta_n^8+2\theta_n^7\right]+\gamma\left[2\theta_n^8+\theta_n^7\right] & x(n)=7
+    \end{cases}\\
+    \theta_{n+1}^8&=\theta_n^8+\begin{cases}
+        \alpha[(2\gamma-1)\theta_n^8+\gamma\theta_n^7-2\theta_n^k] & x(n)=k\leq 6 \\ 
+        \alpha[-(1-\gamma)[2\theta_n^8+\theta_n^7-]] & x(n)=7 
+    \end{cases}
+\end{align*}
+Insert \(\frac{1}{7}\) for importance sampling.
+
+6 of 7 times, \((2\gamma-1)\) for \(\gamma>0.5\) amplifies \(\theta_n^8\). TD\((\lambda)\) does 
+not change the behavior. 
+
+A DP-like algorithm with gradient updates and averaging, or expectation, over all 
+states does not change the behavior. 
+
+Similar counterexamples exist  for \(Q\)-learning. Generally, a behavior policy \textit{close enough}
+to the target does not result in divergence, but so far there is no theory. 
+
+\subsection{Tsitsiklis and Van Roy's counter example}
+
+
+\begin{tikzcd}
+    \theta\arrow[r] & 2\theta \arrow[dr,"\epsilon"]\arrow[loop right, "1-\epsilon"]&\\
+    &&\substack{\square\\\text{terminal state}} 
+\end{tikzcd}
+
+\begin{align*}
+    \theta_{n+1}&=\argmin_{\theta\in\R}\sum_{x\in X}\left(V^\theta(x)-\bE(0+\gamma V^\theta(x')\mid x'=F(x))\right)^2
+\end{align*}
+So \(\theta_{n+1}\) minimizes the MSE at each step between the approximation and the expected return.
+
+\begin{align*}
+    \theta_{n+1}&=\argmin_{\theta\in \R} (\theta-\gamma 2\theta_n)^2+(2\theta-(1-\epsilon)\gamma 2 \theta_n)^2  \\
+    &=\frac{6-4\epsilon}{5}\gamma\theta_n
+\end{align*}
+
+When \(\gamma>\frac{5}{6-4-\epsilon}\) and \(\theta_0\neq 0\) the sequence diverges.
+
+\subsection{The deadly triad}\marginnote{Non-Bootstrap methods would not have these problems?}
+
+\begin{enumerate}
+    \item Function approximation: scalable way to work with a state space much larger then the memory and compute resources 
+    \item Bootstrapping: Updates that are based on current estimates, as in TD or DP methods. One could alternatively use so called Monte Carlo methods, which use only actual rewards and compute returns  
+    \item Off-policy learning: Training on a distribution of transitions different to that of the target policy.
+\end{enumerate}
+
+Divergence arises if all three are present. \marginnote{The note this is not necessarily specific to the RL-setting and hint to operations research}
+If there are only two present, instability can be avoided.
+\begin{enumerate}
+    \item For large problems function approximation cannot be avoided
+    \item Bootstrapping can be avoided at the cost of computational and data efficiency. One advantage is the direct updating after each transition, or couple of transitions. It (bootstrapping) typically results in faster learning w.r.t data efficiency 
+    \item Often on-policy is adequate, as long as the state-action space is reasonably covered \begin{enumerate}
+        \item data re-use, in particular if data is costly. One would like to do \dhighlight{experience replay}, i.e. re-use data from \textit{earlier} policies
+        \item learning multiple RL agents, i.e. several value functions and policies 
+    \end{enumerate} 
+              The behavior policy likely reflects only one task of many, i.e. there is only one target policy, but it may overlap partly with other tasks.
+\end{enumerate}
+
+
+
+\markeol{18}
