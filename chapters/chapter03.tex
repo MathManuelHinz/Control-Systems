@@ -138,7 +138,7 @@ and
 
 Basis \(\{\psi_i\},h^\theta(z)=\sum_{i=1}^d \theta_i\psi_i(z)\), we want \(0\stackrel{!}{=}\nabla_\theta \Gamma(h^\theta)\).
 
-For Bellmann error 
+For Bellman error 
 \begin{align*}
     0&=\frac{1}{N}\sum_{k=1}^ND_k(h^\theta(z_k),h^\theta(z_{k+1}))\zeta^\theta(k)\\
     \zeta^\theta(k)&=\nabla_\theta D_k(h^\theta(z_k),h^\theta(z_{k+1}))
@@ -159,7 +159,7 @@ It can make sense to have \(d_\zeta=d,\) if \(\theta\in \R^d\).
 
 \section{Projected Bellman equation}
 
-Consider \(h^\star=T(h^\star)\). \marginnote{Motivated by the solution of the Bellmann equation}
+Consider \(h^\star=T(h^\star)\). \marginnote{Motivated by the solution of the Bellman equation}
 
 Reminder \(Q^n(x,u)=c(x,u)+Q^n(x^+,u^+)\), where \(x^+=F(x,u),\ u^+=\phi(x^+)\). In our notation \(Q^\theta(x,u)\):
 
@@ -668,7 +668,150 @@ If there are only two present, instability can be avoided.
     \end{enumerate} 
               The behavior policy likely reflects only one task of many, i.e. there is only one target policy, but it may overlap partly with other tasks.
 \end{enumerate}
-
-
-
 \markeol{18}
+\beginlecture{19}{01.07.2025}
+
+%TODO based on dynamic programming and optimal control Vol 2 fourth edition 6.1 / 6.2
+% the most mathy, but not mathy enough for us :D The start is from his book
+
+\section{Monte Carlo Sampling / Simulation}
+%TODO: today focuses on value functions
+
+\dhighlight{Aim:} Generate trajectories, use observed states,
+actions and costs. Use that to directly estimate \(V^\phi, J^\phi\). % Policy evaluation, both the same
+
+\marginnote{The uniform choice implies that \(X\) is bounded in some sense I think}
+
+\begin{algorithm}[H]
+    \caption{Episodes first-visit  MC policy evaluation}\label{alg:fvmcpe}
+    \begin{algorithmic}
+    \State initialize return(\(x_i\)) as an empty list for all states \(x_i\)
+    \While{stopping criteria not fullfilled}
+        \State choose \(x(0)\in X\) uniformly random among possible start positions
+        \State Sample \(\phi\) to generate a trajectory \(x(0),u(0),c(0),\dots, x(l-1),u(l-1),c(l-1)\)
+        \State target \(\leftarrow 0\)
+        \For{\(i\in l-1,\dots,0\)}
+            \State target \(\leftarrow c(i+1)+\gamma\cdot\)target 
+            \If{\(x(i)\notin \{x(0),\dots,x(i-1)\}\)}
+                \State append target to return\((x(i))\)
+                \State \(V(x(i))\leftarrow \) average(return\((x(i))\))
+            \EndIf
+        \EndFor
+    \EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}
+    \(\phi\) is fixed, so sampling it means following the path (which might be random).
+\end{remark}
+
+So, we compute in each update 
+\[\tilde{c}(x(i))=\sum_{k=i}^{l-1}\gamma^{k-i}c(k-1)\]
+which is an estimate of \(V^\phi(x_i)\). Using only the first visit, one can see that 
+we have independent identically distributed estimates, convergence of 
+the average to \(V^\phi\) follows by the law of large numbers.  
+
+Consider a \(q\times d\) matrix \(\Psi\), which we can view as some basis representation,
+and some subspace \(S\) spanned by \[S=\{\Psi\cdot \theta\mid \theta\in\R^d\}\].
+The projected Bellman equation 
+\[\Psi\theta=\pi T^\phi(\Psi\theta)\]
+where \(T^\phi\) is the Bellman operator and \(\pi\) is the projection onto \(S\) w.r.t. \(\Vert \cdot \Vert\).
+
+This solves approximately \(J^\phi=T^\phi J^\phi\). In the terminology of Berzicas %TODO: FIX
+this us called the \dhighlight{indirect approach}.
+
+The \dhighlight{direct approach} is finding \(\tilde{J}\in S\) via 
+\[\min_{J\in S} \Vert J^\phi-\tilde{J}\Vert\]
+or 
+\[\min_{\theta\in\R^d}\Vert J^\phi-\Psi \theta.\]
+If \(\Psi\) has independent columns, then the solution \(\theta^\star\)
+is unique. 
+
+Now consider \(\Vert \cdot\Vert_\xi\), \marginnote{not totally different to the previous \(\xi\)}
+\[\xi_i\geq 0,\ i=1,\dots,q,\ \Vert J\Vert_\xi^2=\sum_{i=1}^q \xi_i(J_i)^2.\]
+\[\theta^\star=\argmin_{\theta\in\R^d}\sum_{i=1}^q \xi(\Psi(i)^\intercal)\cdot \theta-J_i,\]
+where \(\Psi(i)\) is the ith row of \(\Psi\). 
+
+Setting the gradient to \(0\) gives 
+\begin{align*}
+    \theta^\star&=\underbrace{\left(\sum_{i=1}^q \xi_i\Psi(i)\Psi(i)^\intercal\right)^{-1}}_{\hat{A}}\underbrace{\sum_{i=1}^q \xi_i\Psi(i)J_i}_{\hat{B}}. 
+\end{align*}
+
+Now assume \(\xi\) is a probability distribution, so we can consider both terms as 
+expected values and can approximate them by Monte Carlo estimates.
+
+so, we generate a sequence of samples of indices \(i_t,\ t=1,\dots, K\)
+according to \(\xi\) and obtain 
+\begin{align*}
+    A&=\frac{1}{K}\sum_{t=1}^K\Psi(i_t)\Psi(i_t)\approx \hat{A}\\
+    B&=\frac{1}{K}\sum_{t=1}^K \Psi(i_t)J_{i_t}\approx \hat{B}
+\end{align*} 
+
+Generally, \(\hat{\phi}_k\to\theta^\star\) as \(k\) is increasing. For that 
+\[\xi_i=\lim_{k\to\infty} \frac{1}{K}\sum_{t=1}^K \delta(i_t=i),\ i=1,\dots,q\]
+the long term empirical frequencies should be consistent with the probabilities \(\xi_i\).
+
+\(\xi_i\) does not need to tbe pre-determined, i.e. it can 
+be implicitly defined as above, given a reasonable sampling scheme.
+
+We can also solve \[\hat{\theta}_K=\argmin_{\theta\in\R^d}\sum_{t=1}^K (\Psi(i_t)^\intercal \theta-J(i_t))^2.\]
+So, we reduce \(q\) dimensional linear algebra operations to \(d\)-dimensional ones, using Monte Carlo sampling, 
+and perform lower dimensional linear algebra.
+
+\subsection{MC estimation and the solution of linear equations systems}
+
+Generally \[Cr=d,\]
+where \(C,\ d\) might be difficult to compute directly. We aim for 
+\(\hat{C},\ \hat{d}\) as simulation generated estimates.
+
+In our context, we aim to find \(\tilde{J}(\cdot,\theta)\) as an approximation 
+of \(J^\phi\).
+\[\min_\theta\sum_{k=1}^q\left(J_i^\phi-\tilde{J}(i,\theta)\right)^2\]
+We use a subset \(\tilde{I}\) of \textit{representative} states 
+
+For each \(i\in \tilde{I}\) we obtain \(M(i)\) samples of \(J_i^\phi\), with \(c(i,m)\)
+denoting the m-th sample.
+\[c(i,m)\approx J_i^\phi+\text{ noise }+\text{ simulation error}\]
+\begin{align*}
+    \min_{\theta}\sum_{i\in\tilde{I}}\sum_{m=1}^{M(i)}\left(c(i,m)-\tilde{J}(i,\theta)\right)^2
+\end{align*}
+\marginnote{this is now actually computable}
+
+If \(\tilde{J}(i,\theta)=\Psi(i)^\intercal\theta\), solve 
+\[\sum_{i\in \tilde{I}}\sum_{m=1}^{m(i)}(c(i,m)-\tilde{J}(i,\theta))^2\]
+If \(\tilde{I}=\{1,\dots,q\}\), then for \(M(i)\to\infty,\Psi\theta\) converges 
+to the projection of \(J^\Phi\) into \(\{\Psi\theta\mid\theta\in\R^d\}\) w.r.t 
+some weighted euclidean norm. The weights of the norm are specified by the relative 
+frequencies of the different states:
+\[\lim_{K\to\infty} \frac{M(i)}{\sum_{i=1}^q} M(i)\]
+\marginnote{here \(K=\sum_{i=1}^q M(i)\)}
+
+\subsection{Importance Sampling}
+
+\[\Vert \Psi\theta-J\Vert_\xi^2\]
+Projection is an expected value according to \(\xi\), where 
+there are multiple alternative distribution according to which 
+we may represent the error above as an expected value.
+
+It should be more effective to sample  \textit{important} terms/ states 
+more often, i.e. large vs small size of \(J_i^\phi\). This is known as 
+\dhighlight{important samplings}.
+
+Generally, consider 
+\[z=\sum_{w\in W}v(w),\]
+where \(W\) is a finite set and \(v:W\to\R\). Consider a sampling distribution 
+\(\xi\) over \(W\), and sample according to it. Write first 
+\[z=\sum_{w\in W} \xi(w)\frac{v(w)}{\xi(w)}\]
+and estimate it by 
+\begin{equation}\label{eq:estimate_importance_sampling}
+    \hat{z}_K=\frac{1}{K}\sum_{i=1}^K \frac{v(w(i))}{\xi(w(i))}.  
+\end{equation}
+For this to valid, we want \(xi(w)=\lim_{K\to\infty} \frac{1}{K}\sum_{i=1}^{K}\delta(w_i=w)\ \forall w\in W\).
+
+The expression (\ref{eq:estimate_importance_sampling}) suggests that \(\xi\) should be chosen s.t. 
+the variance of the random variable \(\frac{v(w)}{\xi(w)}\) is small. In the extreme the 
+variance is 0 and \(\xi(w)=v(w)/z\ \forall w\in W\) and \(v(w)>0\), then a single sample is enough. 
+
+%the minimization with c(i,m) is the key idea.
+\markeol{19}
+
