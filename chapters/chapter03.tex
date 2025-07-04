@@ -804,7 +804,7 @@ and estimate it by
 \begin{equation}\label{eq:estimate_importance_sampling}
     \hat{z}_K=\frac{1}{K}\sum_{i=1}^K \frac{v(w(i))}{\xi(w(i))}.  
 \end{equation}
-For this to valid, we want \(xi(w)=\lim_{K\to\infty} \frac{1}{K}\sum_{i=1}^{K}\delta(w_i=w)\ \forall w\in W\).
+For this to valid, we want \(\xi(w)=\lim_{K\to\infty} \frac{1}{K}\sum_{i=1}^{K}\delta(w_i=w)\ \forall w\in W\).
 
 The expression (\ref{eq:estimate_importance_sampling}) suggests that \(\xi\) should be chosen s.t. 
 the variance of the random variable \(\frac{v(w)}{\xi(w)}\) is small. In the extreme the 
@@ -812,3 +812,112 @@ variance is 0 and \(\xi(w)=v(w)/z\ \forall w\in W\) and \(v(w)>0\), then a singl
 
 \markeol{19}
 
+\beginlecture{20}{03.07.2025}
+
+\section{Gradient Methods for direct Policy Evaluation}
+
+\[\min_{\theta}\sum_{i\in I}\sum_{m=1}^{M(i)}\left(\tilde{J}(i,\theta)-c(i,m)\right)^2\]
+Now, use gradient descent to solve this, and use the data in batches.
+
+We have a \(N\)-transition portion \((i_0,\dots,i_N)\) of 
+a sampled trajectory, a \dhighlight{batch}.
+\[\sum_{t=k}^{N-1}\gamma^{t-k}c(i_t,u(i_t),i_{t+1}),\ k=0,\dots,N-1\]
+are \dhighlight{cost samples} as we  had in Monte Carlo Policy evaluation (MC PE).
+
+To approximate in \(L^2\)-sense 
+\[\min_\theta\sum_{k=0}^{N-1}\left(\tilde{J}(i_k,\theta)-\sum_{t=k}^{N-1} \gamma^{t-k}c(i_t,u(i_t),i_{t+1})\right)^2\]
+\(\to\) use gradient descent to update 
+\[\theta_{n+1}=\theta_n-\alpha\sum_{n=0}^{N-1}\nabla \tilde{J}(i_k,\theta)\left(\tilde{J}(i_k,\theta)-\sum_{t=k}^{N-1} \gamma^{t-k}c(i_t,u(i_t),i_{t+1})\right)\]
+
+In traditional gradient descent, this iteration is repeated until convergence. In part, this 
+one \(N\)-transition is  used. Balancing
+\begin{itemize}
+    \item Large \(N\) \(\to\) reduce sample error, and to obtain multiple estimates per state and cover all states \marginnote{Or a representative subset} 
+    \item Small \(N\) \(\to \) to keep effort per GD step small 
+\end{itemize} 
+
+In RL, batches may be changed after (some) iterations. Batches might come from different sampling 
+strategies, might be part of a long trajectory, might overlap,\dots
+
+Clearly this connects to aspect of exploration (which we have previously seen).
+
+\begin{remark}
+    Convergence analysis taking the stochastic nature into account is possible, but can be mathematically
+    involved (due to the several aspects: sampling, stochastic aspects,\dots and the interactions)      
+\end{remark}
+
+\subsection{Incremental Gradient Method for direct Policy Evaluation}
+
+Instead of updating \(\theta\)  after \(N\) transitions, processing all \(N\)
+at once, we can incrementally update \(\theta\) \(N\) times. After each 
+transition \((i_k,i_{k+1})\):
+\begin{enumerate}
+    \item Evaluate \(\nabla\tilde{J}(i_k,\theta)\)
+    \item Sum all terms that involve \((i_k,i_{k+1})\) and update 
+    \[\theta'=\theta-\alpha\left[\nabla \tilde{J}(i_k,\theta)\tilde{J}(i_k,\theta)-\left(\sum_{t=0}^{k}\gamma^{k-t}\nabla\tilde{J}(i_t,\theta)\right)c(i_k,u(i_k),i_{k+1}) \right]\]
+\end{enumerate}
+
+After \(N\) transitions all the terms of the batch iteration have been accumulated. Here, 
+\(\theta\) is updated during the batch processing, and 
+\(\nabla\tilde{J}\) is evaluated at a different (updated) \(\theta\) after each transition.
+
+Since \(\theta\) is updated all the time, the location of the end of the batch becomes less relevant. 
+As before, the \(\Vert \cdot\Vert_\xi\), will be implicitly weighted 
+in proportion to the frequency of  occurrence of each state.
+
+Connection to TD Error: \(-D_{k+1}=td_k=\tilde{J}(i_k,\theta)-\gamma\tilde{J}(i_{k+1},\theta)-c(i_k,u(i_k),i_{k+1})\)
+
+with \(td_{N-1}=\tilde{J}(i_{N-1},\theta)-c(i_{N-1},u(i_{N-1}),i_N)\).
+We can write this as: 
+\begin{align*}
+    td_k+\gamma td_{k+1}+\dots+\gamma^{N-1-k}td_{N-1}
+\end{align*}
+With that we can implement the batch iteration as 
+\begin{itemize}
+    \item after \((i_0,i_{1})\) set \[\theta'=\theta-\alpha td_0\nabla \tilde{J}(i_0,\tilde{\theta})\]
+    \item after \(i_{1},i_{2}\) set \(\theta=\theta'\) and \[\theta'=\theta-\alpha td_{1}\left(\gamma\nabla\tilde{J}(i_0,\tilde{\theta})+\nabla\tilde{J}(i_1,\tilde{\theta})\right)\]
+\end{itemize}
+Repeating gives after \((i_{N-1},i_N)\) set 
+\[\theta'=\theta-\alpha td_{N-1}\left(\gamma^{N-1}\nabla\tilde{J}(i_0,\tilde{\theta})+\gamma^{N-2}\nabla\tilde{J}(i_1,\tilde{\theta})+\dots+\nabla\tilde{J}(i_{N-1}\tilde{\theta})\right)\]
+Here \(\tilde{\theta}=\theta\) a the beginning of the batch. In the incremental version \(\tilde{\theta}=\theta\) at transition \((i_k,i_{k+1})\) for each \(\nabla\tilde{J}(i_k,\tilde{\theta})\).
+
+In particular, start with \(\theta_0\) and for \(k=0,\dots,N_1\) set 
+\[\theta_{k+1}=\theta_k-\alpha td_k\sum_{t=0}^k\gamma^{k-t}\nabla\tilde{J}(i_t,\theta_t).\]
+
+For linear approximation \(\tilde{J}(i,\theta)=\Psi(i)^\intercal\theta,\ i=1,\dots,q,\ \Psi(i)\in \R^5\).
+\[\theta_{k+1}=\theta_k-\alpha td_k\sum_{t=0}^k \Psi(i_t).\]
+\dhighlight{This is TD(1)!} \marginnote{in slightly different notation \dots}
+
+\subsection{Multistep methods with sampling}
+
+Fixed point view: \(J=TJ,\ J=\Pi TJ\)
+
+We can replace \(T\) by either \(T^l,\ l>1\) or consider 
+\[T^{(\lambda)}=(1-\lambda)\sum_{l=0}^\infty \lambda^l T^{l+1}\]
+\marginnote{On can show \(\lambda \to 1\) connects to TD(1) as previously considered}
+One can show under natural assumptions that\(T^{(\lambda)}\) and \(\Pi T^{(\lambda)}\) are contractions 
+of modulus \(\gamma_\lambda=\frac{\gamma(1-\lambda)}{1-\gamma\lambda}\):
+\begin{align*}
+    \Vert T^{(\lambda)}y-T^{(\lambda)}z\Vert \leq \gamma_\lambda\Vert y-z \Vert.
+\end{align*}
+
+Furthermore 
+\begin{align*}
+    \Vert J^\phi-Psi\theta_\lambda^\star\Vert_\xi\leq \frac{1}{\sqrt{1-\gamma_\lambda^2}}\Vert J^\phi-\Pi J^phi\Vert_\xi 
+\end{align*}
+
+We can see from this, that we want \(\lambda\) close to 1, as \(\gamma_\lambda\stackrel{\lambda\to 1}{\to}1\)
+and \(T^{(\lambda)}\) is a contraction for any given norm for \(\lambda\) close enough to \(1\).
+Same goes for \(\Pi T^{(\lambda)}\). Further with \(\lambda\to 1\) the error bound becomes better.
+
+\subsection{Bias-Variance Tradeoff}
+
+We can consider \(\Psi\theta^\star-\Pi J^\phi\) as a form of bias.
+But, one can observe that the sampling error becomes larger as \(\lambda\) increases.
+\[T^{(\lambda)}=\sum_{l=0}^\infty \underbrace{(1-\lambda)\lambda^l}_{\text{increases with }\lambda} \underbrace{T^{l+1}}_{\text{noise variance due to the approximation of the lth power. Increases with } l}\]
+Therefore one needs to balance bias-variance, and experiment with \(\lambda\).
+
+\marginnote{It is not clear how good one needs to approximate the value function to update the policy? Adding a constant worsens the error, but does not hange the policies!}
+
+
+\markeol{20}
