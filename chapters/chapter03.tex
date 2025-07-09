@@ -912,12 +912,141 @@ Same goes for \(\Pi T^{(\lambda)}\). Further with \(\lambda\to 1\) the error bou
 
 \subsection{Bias-Variance Tradeoff}
 
+\marginnote{It is not clear how good one needs to approximate the value function to update the policy? Adding a constant worsens the error, but does not hange the policies!}
 We can consider \(\Psi\theta^\star-\Pi J^\phi\) as a form of bias.
 But, one can observe that the sampling error becomes larger as \(\lambda\) increases.
 \[T^{(\lambda)}=\sum_{l=0}^\infty \underbrace{(1-\lambda)\lambda^l}_{\text{increases with }\lambda} \underbrace{T^{l+1}}_{\text{noise variance due to the approximation of the lth power. Increases with } l}\]
 Therefore one needs to balance bias-variance, and experiment with \(\lambda\).
-
-\marginnote{It is not clear how good one needs to approximate the value function to update the policy? Adding a constant worsens the error, but does not hange the policies!}
-
-
 \markeol{20}
+
+\beginlecture{21}{08.07.2025}
+
+\section{Policy Gradient Methods}
+
+%TODO Tradionally very stochastic, some technicallities are ignored 
+
+%TODO: a bit of Barto 
+
+Fix a class of policies, parametrized by \(\theta\in \R^d\), i.e. we have \(\phi^\theta\). 
+
+\dhighlight{Goal:} minimize \[\theta\mapsto V^{\phi^\theta}(x)=J_x(\theta).\]
+We use gradient procedures, these are called policy gradient methods. We assume \(\theta\mapsto \phi^\theta\)
+is differentiable in \(\theta\) for all states of \(X\).If we use \(Q\)-view, also for all actions.
+\begin{equation}\label{eq:pg_update}
+    \theta_{n+1}=\theta_n+\alpha\nabla J(\theta_n)  
+\end{equation}
+
+PG methods are typically stochastic. Consider a finite state action space, \(d=|X|\cdot |U|\).
+Denote \(\theta=(\theta_{x,u})_{x\in X,\ u\in U}\) and define \dhighlight{softmax} policy
+\begin{align*}
+    \phi^\theta(u;x)&=\bP(U_t=u\mid X_t=x,\theta_t=\theta)\\
+                    &=\bP(U=u\mid X=x,\theta=\theta) \\
+                    &=\frac{e^{\theta_{x,u}}}{\sum_{u'\in U} e^{\theta_{x,u'}}} 
+\end{align*}
+
+%Key observation: Write J in terms of \(\theta\)
+
+Let \(C_t^T=\sum_{k=t}^{T-1}c(x(k),u(k))\) be the cost after time \(t\).
+\begin{theorem}[Policy Gradient Theorem]\label{thm:54}
+    Assume that we have \(T\)-step MDP with finite 
+    state action spaces and consider (stationary, in the sense of (\ref{eq:pg_update})) differentiable family 
+    of policies \(\phi^\theta,\ \theta\in \R^d\). Then the gradient 
+    of the value function is 
+    \[\nabla_\theta J_x(\theta)=\bE_x^{\phi^\theta}\left[\sum_{t=0}^{T-1} \nabla_\theta\log \phi^\theta(u(t),x(t))C_t^T\right] \]
+\end{theorem}
+
+\begin{proof}[Proof idea]
+    Basically calculus / chain rule, re-arranging terms and using the log trick 
+    \[\nabla \log = \frac{\nabla f}{f},\ \nabla f\frac{f}{f}=(\nabla\log f)f\] 
+\end{proof}
+
+Using \(\bE_x^{\phi^\theta}\left[C_t^T\mid x_t=x,u_t=u\right]=Q_t^{\phi^\theta}(x,u)\),
+we can write \[\nabla_\theta J_x(\theta)=\bE_x^{\phi^\theta}\left[\sum_{t=0}^{T-1}\nabla_\theta \left(\log \phi^\theta(u(t));x(t)Q_t^{\phi^\theta}(x(t),u(t))\right)\right]\]
+% Actor critic methods
+\begin{definition*}
+    If \(\phi^\theta\) is a policy, then the vector \(\nabla_\theta\log\phi^\theta(u;x)\)
+    is  called the \dhighlight{score function} of the policy.
+\end{definition*}
+
+We sample to estimate the expectation and perform stochastic gradient descent using 
+\(K\) trajectories \((x^i(0),u^i(0),x^i(1),c^i(1),u^i(1),\dots, u^i(T-1),x^i(T),c^i(T))\) sampled according to
+the policy \(\phi^\theta\)
+\begin{align*}
+    \tilde{\nabla}_\theta J_x(\theta)=\frac{1}{K}\sum_{i=1}^K\left[\sum_{t=0}^{T-1}\nabla_\theta \left(\log \phi^\theta(u^i(t),x^i(t))\sum_{t'=t}^{T-1}c(t'+1)\right)\right]
+\end{align*}
+
+
+\begin{algorithm}[H]
+    \caption{REINFORCE-(Batch) Stochastic Gradient Algorithm}\label{alg:reinforce}
+    \underline{Given:} \(\theta_0,K\geq 1\) initial state distribution \(\mu\)
+    \begin{algorithmic}
+    \State \(l=0\)
+    \While{stopping criteria not fullfilled}
+        \For{\(i=1,\dots K\)} 
+            \State sample trajectory \(i\): \((x^i(0),u^i(0),x^i(1),c^i(1),u^i(1),\dots, u^i(T-1),x^i(T),c^i(T))\)
+        \EndFor
+        \State choose \(\alpha\)
+        \State \begin{align*}
+            \tilde{\nabla}_\theta J_x(\theta)=\frac{1}{K}\sum_{i=1}^K\left[\sum_{t=0}^{T-1}\nabla_\theta \left(\log \phi^\theta(u^i(t),x^i(t))\sum_{t'=t}^{T-1}c(t'+1)\right)\right]
+        \end{align*} with \(\theta=\theta_l\)
+        \State \(\theta_{l+1}=\theta_k\alpha \tilde{\nabla}J(\theta_l)\)
+        \State \(l=l+1\) 
+    \EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Infinite Horizon}
+
+We measure the \dhighlight{discounted state visitations} and denote \(\bP_\mu^\phi(X_t=x')=\bP(\mu\to x'\mid t,\phi)\)
+\[\rho_\mu(x')=\sum_{t=0}^{\infty}\gamma^t\bP_\mu^\phi(X_t=x')=\bE_\mu^\phi\left[\sum_{t=0}^{\infty}\gamma^t 1_{X_t=x'}\right]\]
+We define a measure from it 
+\[d_\mu^\phi(x)=\frac{\rho_\mu^\phi(x)}{\sum_{x'}\rho_\mu^\phi(x')}=(1-\gamma)\rho_\mu^\phi(x)\]
+\[\sum_{x'}\bE(1_{X_t=x'})=\frac{1}{1-\gamma}\] %TODO: FIX
+Using dynamic programming equation, repeating chain rule, one can show 
+\begin{theorem}\label{thm:55}
+Under the assumption that \(J_x(\theta)\) is differentiable for every state \(x\in X\) it holds 
+that 
+\[\nabla_\theta J_x(\theta)=\frac{1}{1-\gamma}\bE_{\substack{X\sim dx\\u\sim \phi^\theta(x)}}\left[\nabla\log\left(\phi^\theta(U;X)\right)Q^{\phi^\theta}(X,U)\right]\]    
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+
+\begin{align*}
+    \nabla J_x(\theta)&=\sum_{x'\in X}\sum_{u\in U_{x'}}\overbrace{\rho_x^{\phi^\theta}}^{\frac{1}{1-\gamma}d_x^{\phi^\theta}(x')}\nabla\phi^\theta(u;x')Q^{\phi^\theta}\\
+    &=\frac{1}{1-\gamma}\sum_{x'\in X}\sum_{u\in U}\nabla\log\left(\phi^\theta(u;x')\right)Q^{\phi^\theta}(x',u)\phi^\theta(u;x')d_x^{\phi^\theta}(x')\\
+    &=\frac{1}{1-\gamma}\bE_{x\sim d_x^{\phi^\theta},U\sim\phi^\theta(\cdot;x)}\left[\nabla\log (\phi^\theta(u,x'))Q^{\phi^\theta}(x',u)\right]
+\end{align*}
+
+\end{proof}
+
+Sampling from \(d^\phi\) can be achieved as follows:\marginnote{This is esentially bootstrap sampling, but worse?}
+\begin{enumerate}
+    \item follow rollout until an independent time according to Geom\((1-\gamma)\)
+    \item estimate empirical distribution by counting the number of visits 
+    \item sample from the thereby estimated occupancy measure
+\end{enumerate}
+
+\begin{theorem}\label{thm:57}
+    Suppose that \((x,u)\mapsto \nabla_\theta\left(\log\phi^\theta(u;x)\right)Q^{\phi^\theta}\) is bounded.
+    Then 
+    \begin{align*}
+        \nabla_\theta J_x(\theta)&=\bE_x^{\phi^\theta}\left[\sum_{t=0}^{\infty}\gamma^t\nabla_\theta(\log \phi^\theta(U_t,X_t))Q^{\phi^\theta}(X_t,U_t)\right]
+    \end{align*}
+\end{theorem}
+
+The boundedness does not hold in general and might be hard to check. For softmax policies 
+the score function can be computed and is bounded for bounded feature vectors.. If the rewards are bounded, so is \(Q\).
+
+\begin{proof}
+    \begin{align*}
+        \nabla J_x(\theta) &= \sum_{t=0}^{\infty}\gamma^t\sum_{x'\in X}\bP_x^{\phi^\theta}(X_t=x')\sum_{u\in U_{x'}}\nabla\phi^\theta(u;x')Q(x',u)\\
+        &=\sum_{t=0}^\infty \gamma^t\bE_x^{\phi^\theta}\left[\sum_{u\in U}\underbrace{\nabla\phi^\theta(u;X_t)}_{\phi^\theta(\dots)\log \phi^\theta}Q^{\phi^\theta}(X_t,u)\right]\\
+        &=\sum_{t=0}^\infty \gamma^t\bE_x^{\phi^\theta}\left[\nabla \log \phi^\theta(U_t;X_t)Q^{\phi^\theta}(X_t,U_t)\right]\\
+        &=\bE_x^{\phi^\theta}\left[\sum_{t=0}^{\infty}\gamma^t\nabla \log \phi^\theta(U_t;X_t)Q^{\phi^\theta}(X_t,U_t)\right]
+    \end{align*}
+\end{proof}
+
+With that, one can use the REINFORCE algorithm \ref{alg:reinforce} up to some large \(T\),
+use the truncated series as an estimate for the gradient. This estimator is biased!
+
+\markeol{21}
