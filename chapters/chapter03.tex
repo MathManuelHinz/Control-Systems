@@ -989,21 +989,21 @@ the policy \(\phi^\theta\)
         \State \begin{align*}
             \tilde{\nabla}_\theta J_x(\theta)=\frac{1}{K}\sum_{i=1}^K\left[\sum_{t=0}^{T-1}\nabla_\theta \left(\log \phi^\theta(u^i(t),x^i(t))\sum_{t'=t}^{T-1}c(t'+1)\right)\right]
         \end{align*} with \(\theta=\theta_l\)
-        \State \(\theta_{l+1}=\theta_k\alpha \tilde{\nabla}J(\theta_l)\)
+        \State \(\theta_{l+1}=\theta_k-\alpha \tilde{\nabla}J(\theta_l)\)
         \State \(l=l+1\) 
     \EndWhile
 \end{algorithmic}
 \end{algorithm}
 
 \subsection{Infinite Horizon}
-
+% TODO: change + alpha
 We measure the \dhighlight{discounted state visitations} and denote \(\bP_\mu^\phi(X_t=x')=\bP(\mu\to x'\mid t,\phi)\)
 \[\rho_\mu(x')=\sum_{t=0}^{\infty}\gamma^t\bP_\mu^\phi(X_t=x')=\bE_\mu^\phi\left[\sum_{t=0}^{\infty}\gamma^t 1_{X_t=x'}\right]\]
 We define a measure from it 
 \[d_\mu^\phi(x)=\frac{\rho_\mu^\phi(x)}{\sum_{x'}\rho_\mu^\phi(x')}=(1-\gamma)\rho_\mu^\phi(x)\]
 \[\sum_{x'}\bE(1_{X_t=x'})=\frac{1}{1-\gamma}\] %TODO: FIX
 Using dynamic programming equation, repeating chain rule, one can show 
-\begin{theorem}\label{thm:55}
+\begin{theorem}\label{thm:56}
 Under the assumption that \(J_x(\theta)\) is differentiable for every state \(x\in X\) it holds 
 that 
 \[\nabla_\theta J_x(\theta)=\frac{1}{1-\gamma}\bE_{\substack{X\sim dx\\u\sim \phi^\theta(x)}}\left[\nabla\log\left(\phi^\theta(U;X)\right)Q^{\phi^\theta}(X,U)\right]\]    
@@ -1048,5 +1048,136 @@ the score function can be computed and is bounded for bounded feature vectors.. 
 
 With that, one can use the REINFORCE algorithm \ref{alg:reinforce} up to some large \(T\),
 use the truncated series as an estimate for the gradient. This estimator is biased!
-
 \markeol{21}
+\beginlecture{22}{10.07.2025}
+
+Assumptions for this lecture (APP): \marginnote{Assumption on Parametrized Policy} 
+
+The policy \(\phi^\theta\) is differentiable w.r.t. \(\theta\) an \(\nabla(\phi^\theta(u;x))\) exists 
+is globally Lipschitz w.r.t. \(\theta\), i.e. it is \(L_\theta\)-smooth and has bounded 
+norm for any \(x,u\in X\times U\). 
+
+This is fulfilled for linear softmax parametrization.
+
+\begin{proposition}\label{prop:58}
+    Suppose that \(\phi^\theta\) fulfills APP and that 
+    \(T\sim\text{Geo}(1-\gamma),\ T'\sim\text{Geo}(1-\gamma^{\frac{1}{2}})\) are independent
+    of each other and the MDP. Then 
+    \[\nabla J_x(\theta)=\frac{1}{1-\gamma}\bE_x^{\phi^\theta}\left[\nabla\log \phi^\theta(U_T;X_T)\right]\sum_{t=T}^{T+T'}\gamma^{(t-T)/2}c(X_t,U_t)\]
+    This way, an unbiased estimator can be obtained by a finite but random number of steps. 
+\end{proposition}
+
+\begin{algorithm}[H]
+    \caption{Minibatch-REINFORCE for finite Time Horizon}\label{alg:reinforce_ft}
+    \underline{Given:} \(\theta_0,K\geq 1\) initial state distribution \(\mu\)
+    \begin{algorithmic}
+    \State \(l=0\)
+    \While{stopping criteria not fullfilled}
+        \For{\(i=1,\dots K\)} 
+            \State sample \(T_i\sim \text{Geo}(1-\gamma)\)
+            \State sample trajectory \(i\): \((x^i(0),u^i(0),x^i(1),c^i(1),u^i(1),\dots, u^i(T_i-1),x^i(T_i),c^i(T_i))\) \marginnote{ Like burn-in}
+            \State sample \(T_i\sim \text{Geo}(1-\gamma^{\frac{1}{2}})\)
+            \State sample trajectory \(i\): \((\tilde{x}^i(0)=x^i(T_i),u^i(0)=u^i(T_i),\tilde x^i(1),\tilde c^i(1),\tilde u^i(1),\dots,\tilde u^i(\tilde T_i-1),\tilde x^i(\tilde T_i),\tilde c^i(\tilde T_i))\)
+        \EndFor
+        \State choose \(\alpha\)
+        \State \begin{align*}
+            \tilde{\nabla}_\theta J_x(\theta)=\frac{1}{K}\sum_{i=1}^K\left[\nabla\log \phi^\theta(U_T;X_T)\right]\sum_{t=T}^{T+T'}\gamma^{(t-T)/2}c(X_t,U_t)
+        \end{align*} with \(\theta=\theta_l\)
+        \State \(\theta_{l+1}=\theta_k-\alpha \tilde{\nabla}J(\theta_l)\)
+        \State \(l=l+1\) 
+    \EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}[Stochastic Gradient Descent (SGD) almost sure conv. for \(L\)-smooth functions]\label{thm:59}
+    Let \(F:\R^d\to\R\) be a \(L\)-smooth with \(F_\star=\inf_{\theta\in\R^d}F(\theta)>-\infty\).
+    It satisfies 
+    \[\bE_{z\sim \mu_\theta}\left[\Vert \nabla f(\theta,z)-\bE\left[\nabla_\theta f(\theta,z)\right]\Vert^2\right]\leq c(1+(F(\theta)-F_\star))\] \marginnote{Like the probing signal previously}
+    where \(\bE_{z\sim \mu_\theta}\left[\nabla_\theta f(\theta,z)\right]=\nabla F(\theta)\), this is called ergodic.
+    Consider SGD with step 
+    \begin{itemize}
+        \item sample \(z_{+1}\) from \(\mu_\theta\) % Might be \theta_l
+        \item update \(\theta_{l+1}\leftarrow theta_l-\alpha \nabla_\theta f(\theta_l,z_{l+1})\)
+    \end{itemize}
+    suppose for \((\alpha_l)_{l\in \N}\) it holds \(\alpha_l\geq 0\) and that it holds almost surely 
+    \[\sum_{l=0}^{\infty}\alpha_l=\infty,\ \sum_{l=0}^{\infty}\alpha_l^2<\infty.\]
+    
+    Let \(\theta_0\) be a random variable s.t. \(\bE(F(\theta))<\infty\) and \((\theta_l)_{l\in\N}\)
+    is the sequence of random variable generated by SGD. Then \((F({\theta_l}))_l\) converges almost surely 
+    to some finite r. v. \(F_\infty\) and 
+    \[\lim_{n\to\infty}\Vert \nabla_\theta F(\theta_l)\Vert^2=0\text{ a.s.}\] 
+\end{theorem}
+
+\begin{lemma}\label{lem:60} % what is B_\theta^2
+    Under the assumption APP, the objective \(J_x(\theta)\) is \(L\)-smooth, more precisely global Lipschitz, with 
+    \(L=\frac{c_\star L_\theta}{(1-\gamma)^2}+(1+\gamma)\frac{c_\star B_\theta^2}{(1-\gamma)^3}\),
+    where \(c_\star\) is the maximal cost from the bounded cost assumption.
+\end{lemma}
+
+\begin{proof}
+    This proof was a nightmare to write down, as details are not asked in the exam I will leave it like this ...
+
+    From theorem \ref{thm:56}
+    \begin{align*}
+        \nabla J_{x_0}(\theta)&=\frac{1}{1-\gamma}\sum_{\substack{x\in X\\u\in U}} d_{x_0}^{\phi^\theta}\phi^\theta(u;x)\nabla\log(\phi^\theta(u;x))Q^{\phi^\theta}(x,u)
+    \end{align*}
+    %Todo ????????
+    \begin{align*}
+        Q^{\phi^\theta}=\sum_{t'=0}^{\infty}\gamma^{t'}\sum_{\substack{x'\in X\\u\in U}}p((x,u)\to x_i't_i'\phi^\theta)\phi^{\theta}(u';x')c(x',u')
+    \end{align*}
+    Together 
+    \begin{align*}
+        \nabla J_{x_0}(\theta)&=\sum_{t=0}^\infty\sum_{t'=0}^\infty \gamma^{t+t'}\sum_{\substack{x\in X\\u\in U\\x'\in X\\u'\in U}}\underbrace{p((x,u)\to x_i't_i'\phi^\theta)\phi^{\theta}(u';x')p(x_0\to x_i t_i \phi^\theta)\phi^\theta(u;x)}_{f_{t,t'}^{x_0,\theta}(x,u,x',u')}\nabla\log(\phi^\theta(u;x))c(x',u')
+    \end{align*}
+
+    \begin{align*}
+        \Vert \nabla J_x(\theta_1)-\nabla J_x(\theta_2)\Vert &= \Vert \sum_{t=0}^{\infty}\sum_{t'=0}^{\infty}\gamma^{t+t'}\left\{\sum for theta 1 - \sum for theta 2\right\}\\
+        &=\Vert \sum_{t=0}^{\infty}\sum_{t'=0}^{\infty}\gamma^{t+t'}\left\{\sum_{}f_{t,t'}^{x_0,\theta_1}\left(\nabla\log(\phi^{\theta_1}(u;x)-\nabla\log(\phi^{\theta_2}(u;x)))c(x'-u')\right)+\sum\left(f_{t,t'}^{x_0,\theta_1}-f_{t,t'}^{x_0,\theta_2}\right) \nabla\log \left(\phi^{\theta_2}(u;x)c(x',u')\right)\right\}\Vert\\
+        &\leq \sum_{t=0}^{\infty}\sum_{t'=0}^{\infty}\gamma^{t+t'}\left\{\sum_{}f_{t,t'}^{x_0,\theta_1}\left\Vert\nabla\log(\phi^{\theta_1}(u;x)-\nabla\log(\phi^{\theta_2}(u;x)))c(x'-u')\right\Vert+\sum\left(f_{t,t'}^{x_0,\theta_1}-f_{t,t'}^{x_0,\theta_2}\right) \underbrace{\Vert \nabla\log \phi^{\theta_2}(u;x)\Vert}_{B_\theta} c(x',u')\right\}
+    \end{align*}
+    \(\mathcal{T}_t=\{\tau=\left\{x_0,u_0,x_1,u_1,\dots, x_t,u_t\right\}\mid u_i \in U_{x_i}\}\)
+
+    \begin{align*}
+        f_{t,t'}^{x_0,\theta}=\sum_{\tau\in \mathcal{T}_{t+t'}} 1_{X_t=x,U_t=u,X_{t'}=x',U_{t'}=u'}\prod_{n=0}^{t+t'}\phi^\theta(u_n;x_n)\prod_{n=0}^{t+t'-1}p(X_{n+1},x_n,u_n)
+    \end{align*}
+    \begin{align*}
+        f_{t,t'}^{x_0,\theta_1}-f_{t,t'}^{x_0,\theta_2}&=\sum_{\tau\in \mathcal{T}_{t+t'}} 1_{X_t=x,U_t=u,X_{t'}=x',U_{t'}=u'}\left(\prod_{n=0}^{t+t'}\phi^{\theta_1}(u_n;x_n)-\prod_{n=0}^{t+t'}\phi^{\theta_2}(u_n;x_n)\right)\prod_{n=0}^{t+t'-1}p(X_{n+1},x_n,u_n)\\
+    \end{align*}
+    Using Taylor expansion (or the higher dimensional mean value theorem) of \(\theta\mapsto \prod \phi^\theta\)
+    \begin{align*}
+        \vert \prod \phi^{\theta_1}-\prod \phi^{\theta_2}\vert&\leq \vert (\theta_1-\theta_2)^\intercal \nabla_\theta\left(\prod \phi^\theta(u_n;x_n)\right)\restrict{\theta=\tilde{\theta}} \vert \\
+        &\leq \Vert \theta_1-\theta_2\Vert \left\Vert \sum_{n=0}^{t+t'}\nabla\phi^{\tilde{\theta}}(u_n;x_n) \prod_{m=0,m\neq n}^{t+t'}\phi^{\tilde{\theta}}(u_n;x_n) \right\Vert\\
+        &\stackrel{\leq }{\log \text{ trick}} \Vert \theta_1-\theta_2\Vert \underbrace{\sum_{n=0}^{t+t'}\Vert \nabla\log \left(\phi^{\tilde{\theta}}(u_n;x_n)\right)\Vert}_{(t+t'+1)B_{\theta}} \prod_{m=0}^{t+t'}\phi^{\tilde{\phi}}(u_n;x_n)
+    \end{align*}
+
+    Then the second term from the whole expression  can be bounded 
+    \begin{align*}
+        \sum_{\tau\in \mathcal{T}_{t+t'}}\vert \prod \phi^{\theta_1}-\prod \phi^{\theta_2}\Vert B \cdot B_\theta \cdot C_\star\\
+        &\leq \Vert \theta_1-\theta_2\Vert B_\theta^2 C_\star \underbrace{\sum_{\tau\in \mathcal{T}_{t+t'}}\prod_{m=0}^{t+t'}\phi^\theta(u_m;x_m)\prod_{n=0}^{t+t'}p(x_{n+1},x_n,u_n)}_{=1}
+    \end{align*}
+    since the sum over all trajectories of the probabilities of the paths is 1. \(B\) is something he circled on the board and then erased.
+    Together \[\Vert \nabla J_x(\theta_1)-\nabla J_x(\theta_2)\Vert\leq \sum_{t=0}^{\infty}\sum_{t'=0}^{\infty}\gamma^{t+t'}\left(c_\star L_\theta\Vert \theta_1-\theta_2\Vert + \Vert \theta_1-\theta_2\Vert\left((t+t'+1)B_\theta^2 c_\star\right)\right)\]
+    using \(\sum\sum\gamma^{t+t'}(t+t'+1)=\frac{1+\gamma}{(1-\gamma)^2}\)
+    and \(L=\frac{C_\star L_\theta}{(1-\gamma^2)+\frac{(1+\gamma)c_\star B_\theta^2}{(1-\gamma^3)}}\).
+\end{proof}
+
+
+
+\markeol{22}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
