@@ -1302,10 +1302,126 @@ the advantage has to be approximated.
 
 Observing \(A^{\phi}(x,u)=Q^\phi(x,u)-V^\phi(x)=c(x,u)+V^\phi(x')-V^\phi(x),\ x'\sim p(\cdot,x,u)\).
 We are similar to the temporal difference. It is enough to estimate \(V^\phi\) to estimate \(A^\phi\)
-
-
 \markeol{23}
 
+\beginlecture{24}{17.07.2025}
+
+\chapter{Review}
+
+
+\begin{itemize}
+    \item 30-35 minutes
+    \item he asks questions and we answer
+    \item more about general ideas and concepts
+    \item write down statements, proof ideas (not 30 min technical details)
+    \item Connections, what do we remember?
+    \item we can write down some stuff, but not to much 
+    \item Variable focus, but cover most stuff per exam
+    \item Each exam different (also order) a bit of a random process. Last 2 week more like bonus 
+    \item cover every/ most topic theme a bit at least 
+    \item 
+\end{itemize}
+
+\section{control theory: roughly 1/4}
+\begin{itemize}
+    \item state space models and dynamics 
+    \item discrete first and continuous view
+    \item linear state space model examples connects to nicer results for linear function approximation
+    \item ODE view,  good start stuff until here 
+    \item cost / reward functions  
+    \item Stability and equilibria, Lyapunov methods, how do we understand stability (different versions) 
+    \item Lyapunov functions (inf compactness (boundedness, control over sublevelsets)), other stuff a bit more interesting
+    \item Results from Lyapunov functions for stability, convergence 
+    \item Comparative theorem: connection from Lyapunov function to cost functions implies basis of everything (some proofs were nice!)
+    \item \begin{itemize}
+        \item started with fixed policy 
+        \item finding policies (DP / Bellmann equations)
+        \item principal of optimality, helps reasonable assumption?  
+    \end{itemize}
+    \item function representation, state action view (Q function), more flexibility for the algorithm
+    \item if i have value function, i need a more specific model, whereas Q functions are more model agnostic? RL view, does not know model, control system often assumes it
+    \item What is reinforcement learning hints 
+    \item value and policy iteration, motivation by DP and proofs. In some form everything is either value or policy iteration 
+    \item infinite Horizon (discount), and other formulations, model predictive control (more a bonus)
+    \item continuous view of Lyapunov more intuitive (drift condition \(\frac{d}{dt} V(x)<0\), \(\langle \nabla V(x),f(x)\rangle<0\)), proof was inf compact 
+    \item repeated optimal control in continuous time (to bellman equation? nice to know) 
+\end{itemize}
+
+\section{ODE for algorithm design}
+\begin{itemize}
+    \item rootfinding, describe / construct algorithm by some vector field 
+    \item connection between discretization, gradient descent, ODE scenarios
+    \item ODE theory: Picard lindelöff, Grönwall lemma
+    \item Lemmas providing bounds, used later! Used either continuously or via euler discretization 
+    \item Convexity aspects, continuous differentiable + coercive to get convergence 
+    \item Global asymptotic stability results and ODE view of gradient descent 
+    \item PL-inequality condition and lower bound on gradient to get limit point behavior
+    \item L-smooth + PL to get convergence and more specific statements on stepsize for euler discretization
+    \item L-smooth inequality and PL are bounds from two sides! 
+    \item Properties of loss function to stability and convergence 
+    \item What does all of this have to do with data? Quasi stochastic view (we later saw real stochastic view)
+    \item Probing signal (without being to specific, example: sin and saw, similar to MC)
+    \item  \(f,\bar{f}\) and their connection
+    \item Comparing different views (thetas?)
+    \item Quasi stochastic approximation ODE: one of the interesting ideas was the time scaling, this is a building block to compare views
+    \item Same ODE but different timescale, properties: key thing was pair of identities
+    \item QSA1-QSA3, A going to zero but not to quickly, lipschitz continuous, \(\bar{f}\) and \(f\) are reasonably connected 
+    \item with that show bounds at the end: boundedness implies convergence  
+    \item Question: how do get boundedness? Lyapunov comes to rescue with ultimate boundedness
+    \item to get to that: QSV assumption
+    \item this connected the ODE algorithm design to the earlier stuff
+    \item now we have theoretical foundations!
+    \item How can we get from trajectories and data to first algorithms?
+    \item Bellman error reinterpret as temporal difference error
+    \item TD as intermediate measurement, usually worked with \(Q\) function
+    \item Mean squared bellman error 
+    \item algorithm: based on linerization solve LSE
+    \item We saw several reasons for exploration: View that long trajectory after some point TD gives not much information (goes to zero), LSTD with restarts to get broader coverage 
+    \item First LSTD was formulated in full approximation space, further view: projected bellman equation 
+    \item Instead of bellman operator, introduced projected bellman operator: $\hat{h}=\hat{T}(\hat{h})=P_\cH(T(\hat{h}))$ or \(0=P_G(\hat{h}-T(\hat{h}))\)
+    \item under linearity assumptions and $\cH=G$ both views agree
+    \item started with linear approximation results
+    \item Galerkin relaxation
+    \item Going a bit back .. If we solve in the linear approximation with gradient methods, we can write Bellman error via gradient of loss function. Replace gradient by eligibility vectors    
+    \item formulate TD\(\lambda\), eligibility vectors and \(\lambda\), how do I take into account how temporal difference plays a role? \(\lambda=1,0\) gives to extremes.
+    \item We later saw TD\((\lambda)\) has to do with bias variance, at this stage only as basic RL algorithm formulated in ODE setting 
+    \item TD\((\lambda)\) in linear approximation scheme, can generalize, but can't write down ODE anymore 
+    \item derived a view algorithm like networks, batched versions ... 
+    \item there we could alt least in the linear function approximation we can draw some connections, in non-linear versions, where we can't get much results 
+    \item TD schemes: saw different ways in the policy evaluation? Galerkin as generalization, but breaking down the theory? 
+    \item Additional observations: Observations and ODE approximation. Looking at specific probing signal (under some assumption) can connect to probability measure 
+    \item see that weighting of norms connects to a way in which are probing sampling our domain 
+    \item Exploration aspect in a different session: On vs off policy (theory vs improving policy)
+    \item We had one example of off-policy divergence. Counter example: We have to be careful 
+    \item Concluding part of this section was: what kind of divergence can arise? Deadly triad: being able to explain difficulty 
+    \item Switch to other sources 
+    \item MC policy evaluation aspects. Instead of TD view (1 step), I am now observing estimates of cost 
+    \item We need to approximate a function, where we have some function values. At first we solved some linear equations system 
+    \item MC view gives a different way of solving this (more efficiently)
+    \item Importance sampling view: Might put more importance on total cost, which are large! 
+    \item We don't really want to solve equations \(\implies\) gradient methods in least square approximation problems 
+    \item This gives direct policy evaluation (as before we had TD view for example). Batch versions 
+    \item Rewriting gives TD error, saw this is TD(1)
+    \item used this as motivation for multistep methods 
+    \item T(\(\lambda\)), l+1 step version of bellman operator to reintroduce TD\((\lambda)\)
+    \item first view into stochastics: bias variance Tradeoff, \(\lambda\) is our tuing parameter, TD(1) might not be the best
+    \item final section on policy gradient methods, before we approximated Q or value function and indirectly got policy. Now we approximate policy directly
+    \item What if we parametrize our policy? Stochastic policy (softmax example)
+    \item Policy gradient theorems, seeing in different ways: total cost can be evaluated reasonable 
+    \item Theorem to compute score?
+    \item REINFORCE approach first in finite horizon, then infinite horizon, policy gradient results to show convergence results 
+    \item Mini-batch REINFORCE, to get unbiased estimator, almost sure convegrence for L-smooth functions (connecting back to earlier)
+    \item view lemmas, assumption (~ QSA1)
+    \item Gradient of total cost goes to zero -> goes to critical point
+    \item Also for stochastic gradient stuff we can do convergence theory 
+    \item Last two lectures: Actor critic: combining policy and Q function approximation and use both 
+    \item one can see AC as policy iteration, we came back to policy iteration anyway.
+\end{itemize}
+
+Overall: reasonable overview of RL both theory and praxis, still a lot missing! nobody does linear function approximation, but rather NNs.
+Hope: guide algorithm by theory.
+
+\markeol{24}
 
 
 
