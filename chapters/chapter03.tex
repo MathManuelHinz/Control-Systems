@@ -1,4 +1,4 @@
-\chapter{Value and \(Q\)-Function approximation}
+\chapter{Value and \(Q\)-function approximation}
 
 \section{A very short crash course in machine learning}
 
@@ -336,7 +336,7 @@ We collect some natural properties which hold for linear and nonlinear scenarios
     Suppose that \(\{Q^\theta(x,u)\mid \theta\in \R^d\}\) is continuously differentiable in \(\theta\)
     for each \(x,u\). Then 
     \begin{enumerate}
-        \item The solution to \ref{eq:DQN_batch} solves thef fixed point equation \[\theta_{n+1}=\theta_n+\alpha_{n+1}\frac{1}{r_n}\sum_{k=T_n}^{T_{n+1}}\left[-Q^\theta(x(k),u(k))+\gamma_n(k)\right]+\nabla_\theta Q^\theta(x(k),u(k))\restrict{\theta=\theta_{n+1}}\] with \(\gamma_n(k)=c_k+\underbar{Q}^{\theta_n}(x(k+1))\)
+        \item The solution to \ref{eq:DQN_batch} solves the fixed point equation \[\theta_{n+1}=\theta_n+\alpha_{n+1}\frac{1}{r_n}\sum_{k=T_n}^{T_{n+1}}\left[-Q^\theta(x(k),u(k))+\gamma_n(k)\right]+\nabla_\theta Q^\theta(x(k),u(k))\restrict{\theta=\theta_{n+1}}\] with \(\gamma_n(k)=c_k+\underbar{Q}^{\theta_n}(x(k+1))\)
         \item if the parametrization is linear, so that \[\nabla_\theta Q^\theta(x(k),u(k))=\Psi_{(k)},\] then \[\theta_{n+1}=\theta_n+\alpha_{n+1}\left[A_n\theta_{n+1}-b_n\right]\] with \(A_n=-\frac{1}{r_n}\sum_{k=T_n}^{T_{n+1}-1}\Psi_{(k)}\Psi_{(k)}^\intercal,\ b_n=-\frac{1}{r_n}\sum_{k=T_n}^{T_{n+1}-1}\gamma_n(k)\Psi_{(k)}\). 
     \end{enumerate}
 \end{proposition}
@@ -506,7 +506,7 @@ extend by piecewise linear interpolation. Let \(\{\vartheta_t^n\mid t\geq \tau_n
 The recursion (\ref{eq:recursion}) is said to admit an ODE approximation, if the error
 \[\lim_{n\to\infty}\sup_{\tau_n\leq \tau\leq \tau_n+N}\Vert \hat{\theta}_\tau-\vartheta_\tau^n\Vert=0\]
 If \(\{\theta_n\}\) is bounded, 
-convergence can be shown similar to proposition \ref{prop:38}, which allows 
+convergence can be shown similar to proposition \ref{prop:38}, which allows us
 to use the ideas behind proposition \ref{thm:39}%TODO
 to establish convergence if (\ref{eq:ode_approx})
 is globally asymptotically stable.
@@ -532,7 +532,7 @@ The time scaling \(\tau=s_t\coloneqq \int_0^t a_rdr\) results in
 
 \(\frac{d}{dt}\vartheta_t=\bar{f}(\vartheta_t)\) and assume exponential asymptotically: 
 
-there exists \(\rho_0>0\), \(B_0<\infty\) s.t. for any solution to the ODE and any \(t\geq 0\)
+There exists \(\rho_0>0\), \(B_0<\infty\) s.t. for any solution to the ODE and any \(t\geq 0\)
 \[\Vert \vartheta_t-\theta^\star\Vert\leq B_0\Vert \vartheta_0-\theta^\star\Vert \exp(-\rho_0t).\]
 Remember from  lemma \ref{lem:35} \(\frac{d}{dt}\bar{\theta}_t=a_t\bar{f}(\bar{\theta}_t)\) that 
 \(\theta_t=\vartheta_\tau,t\geq t_0\).
@@ -673,12 +673,10 @@ If there are only two present, instability can be avoided.
 
 This lecture is based on \cite{Bohn.Garcke.Griebel:2024} and \cite{Bertsekas2000} (fourth edition) chapter 6.1 and 6.2. 
 
-\section{Monte Carlo Sampling / Simulation}\marginnote{Todays focus is on value functions}
+\section{Monte Carlo Sampling / Simulation}\marginnote{Todays focus is on value functions. Policy evaluation, both the same}
 
 \dhighlight{Aim:} Generate trajectories, use observed states,
-actions and costs. Use that to directly estimate \(V^\phi, J^\phi\).\marginnote{Policy evaluation, both the same}
-
-\marginnote{The uniform choice implies that \(X\) is bounded in some sense I think}
+actions and costs. Use that to directly estimate \(V^\phi, J^\phi\).
 
 \begin{algorithm}[H]
     \caption{Episodes first-visit  MC policy evaluation}\label{alg:fvmcpe}
@@ -698,6 +696,9 @@ actions and costs. Use that to directly estimate \(V^\phi, J^\phi\).\marginnote{
     \EndWhile
 \end{algorithmic}
 \end{algorithm}
+
+\marginnote{The uniform choice implies that \(X\) is bounded in some sense I think}
+
 
 \begin{remark}
     \(\phi\) is fixed, so sampling it means following the path (which might be random).
@@ -915,15 +916,15 @@ Same goes for \(\Pi T^{(\lambda)}\). Further with \(\lambda\to 1\) the error bou
 \marginnote{It is not clear how good one needs to approximate the value function to update the policy? Adding a constant worsens the error, but does not hange the policies!}
 We can consider \(\Psi\theta^\star-\Pi J^\phi\) as a form of bias.
 But, one can observe that the sampling error becomes larger as \(\lambda\) increases.
-\[T^{(\lambda)}=\sum_{l=0}^\infty \underbrace{(1-\lambda)\lambda^l}_{\text{increases with }\lambda} \underbrace{T^{l+1}}_{\text{noise variance due to the approximation of the lth power. Increases with } l}\]
+\[T^{(\lambda)}=\sum_{l=0}^\infty \underbrace{(1-\lambda)\lambda^l}_{\text{increases with }\lambda} \underbrace{T^{l+1}}_{\substack{\text{noise variance due to the}\\\text{approximation of the lth power. Increases with }l}}\]
 Therefore one needs to balance bias-variance, and experiment with \(\lambda\).
 \markeol{20}
 
-\beginlecture{21}{08.07.2025}
+
 
 \section{Policy Gradient Methods}
-
-%TODO Tradionally very stochastic, some technicallities are ignored 
+\beginlecture{21}{08.07.2025}
+%TODO Traditionally very stochastic, some technicalities are ignored 
 
 %TODO: a bit of Barto 
 
@@ -963,10 +964,10 @@ Let \(C_t^T=\sum_{k=t}^{T-1}c(x(k),u(k))\) be the cost after time \(t\).
 Using \(\bE_x^{\phi^\theta}\left[C_t^T\mid x_t=x,u_t=u\right]=Q_t^{\phi^\theta}(x,u)\),
 we can write \[\nabla_\theta J_x(\theta)=\bE_x^{\phi^\theta}\left[\sum_{t=0}^{T-1}\nabla_\theta \left(\log \phi^\theta(u(t));x(t)Q_t^{\phi^\theta}(x(t),u(t))\right)\right]\]
 % Actor critic methods
-\begin{definition*}
+\begin{definition}\label{def:55}
     If \(\phi^\theta\) is a policy, then the vector \(\nabla_\theta\log\phi^\theta(u;x)\)
     is  called the \dhighlight{score function} of the policy.
-\end{definition*}
+\end{definition}
 
 We sample to estimate the expectation and perform stochastic gradient descent using 
 \(K\) trajectories \((x^i(0),u^i(0),x^i(1),c^i(1),u^i(1),\dots, u^i(T-1),x^i(T),c^i(T))\) sampled according to
@@ -1051,12 +1052,13 @@ use the truncated series as an estimate for the gradient. This estimator is bias
 \markeol{21}
 \beginlecture{22}{10.07.2025}
 
-Assumptions for this lecture (APP): \marginnote{Assumption on Parametrized Policy} 
+Assumptions for this lecture (APP): 
 
 The policy \(\phi^\theta\) is differentiable w.r.t. \(\theta\) an \(\nabla(\phi^\theta(u;x))\) exists 
 is globally Lipschitz w.r.t. \(\theta\), i.e. it is \(L_\theta\)-smooth and has bounded 
 norm for any \(x,u\in X\times U\). 
 
+\marginnote{Assumption on Parametrized Policy} 
 This is fulfilled for linear softmax parametrization.
 
 \begin{proposition}\label{prop:58}
@@ -1304,124 +1306,6 @@ Observing \(A^{\phi}(x,u)=Q^\phi(x,u)-V^\phi(x)=c(x,u)+V^\phi(x')-V^\phi(x),\ x'
 We are similar to the temporal difference. It is enough to estimate \(V^\phi\) to estimate \(A^\phi\)
 \markeol{23}
 
-\beginlecture{24}{17.07.2025}
-
-\chapter{Review}
-
-
-\begin{itemize}
-    \item 30-35 minutes
-    \item he asks questions and we answer
-    \item more about general ideas and concepts
-    \item write down statements, proof ideas (not 30 min technical details)
-    \item Connections, what do we remember?
-    \item we can write down some stuff, but not to much 
-    \item Variable focus, but cover most stuff per exam
-    \item Each exam different (also order) a bit of a random process. Last 2 week more like bonus 
-    \item cover every/ most topic theme a bit at least 
-    \item 
-\end{itemize}
-
-\section{control theory: roughly 1/4}
-\begin{itemize}
-    \item state space models and dynamics 
-    \item discrete first and continuous view
-    \item linear state space model examples connects to nicer results for linear function approximation
-    \item ODE view,  good start stuff until here 
-    \item cost / reward functions  
-    \item Stability and equilibria, Lyapunov methods, how do we understand stability (different versions) 
-    \item Lyapunov functions (inf compactness (boundedness, control over sublevelsets)), other stuff a bit more interesting
-    \item Results from Lyapunov functions for stability, convergence 
-    \item Comparative theorem: connection from Lyapunov function to cost functions implies basis of everything (some proofs were nice!)
-    \item \begin{itemize}
-        \item started with fixed policy 
-        \item finding policies (DP / Bellmann equations)
-        \item principal of optimality, helps reasonable assumption?  
-    \end{itemize}
-    \item function representation, state action view (Q function), more flexibility for the algorithm
-    \item if i have value function, i need a more specific model, whereas Q functions are more model agnostic? RL view, does not know model, control system often assumes it
-    \item What is reinforcement learning hints 
-    \item value and policy iteration, motivation by DP and proofs. In some form everything is either value or policy iteration 
-    \item infinite Horizon (discount), and other formulations, model predictive control (more a bonus)
-    \item continuous view of Lyapunov more intuitive (drift condition \(\frac{d}{dt} V(x)<0\), \(\langle \nabla V(x),f(x)\rangle<0\)), proof was inf compact 
-    \item repeated optimal control in continuous time (to bellman equation? nice to know) 
-\end{itemize}
-
-\section{ODE for algorithm design}
-\begin{itemize}
-    \item rootfinding, describe / construct algorithm by some vector field 
-    \item connection between discretization, gradient descent, ODE scenarios
-    \item ODE theory: Picard lindelöff, Grönwall lemma
-    \item Lemmas providing bounds, used later! Used either continuously or via euler discretization 
-    \item Convexity aspects, continuous differentiable + coercive to get convergence 
-    \item Global asymptotic stability results and ODE view of gradient descent 
-    \item PL-inequality condition and lower bound on gradient to get limit point behavior
-    \item L-smooth + PL to get convergence and more specific statements on stepsize for euler discretization
-    \item L-smooth inequality and PL are bounds from two sides! 
-    \item Properties of loss function to stability and convergence 
-    \item What does all of this have to do with data? Quasi stochastic view (we later saw real stochastic view)
-    \item Probing signal (without being to specific, example: sin and saw, similar to MC)
-    \item  \(f,\bar{f}\) and their connection
-    \item Comparing different views (thetas?)
-    \item Quasi stochastic approximation ODE: one of the interesting ideas was the time scaling, this is a building block to compare views
-    \item Same ODE but different timescale, properties: key thing was pair of identities
-    \item QSA1-QSA3, A going to zero but not to quickly, lipschitz continuous, \(\bar{f}\) and \(f\) are reasonably connected 
-    \item with that show bounds at the end: boundedness implies convergence  
-    \item Question: how do get boundedness? Lyapunov comes to rescue with ultimate boundedness
-    \item to get to that: QSV assumption
-    \item this connected the ODE algorithm design to the earlier stuff
-    \item now we have theoretical foundations!
-    \item How can we get from trajectories and data to first algorithms?
-    \item Bellman error reinterpret as temporal difference error
-    \item TD as intermediate measurement, usually worked with \(Q\) function
-    \item Mean squared bellman error 
-    \item algorithm: based on linerization solve LSE
-    \item We saw several reasons for exploration: View that long trajectory after some point TD gives not much information (goes to zero), LSTD with restarts to get broader coverage 
-    \item First LSTD was formulated in full approximation space, further view: projected bellman equation 
-    \item Instead of bellman operator, introduced projected bellman operator: $\hat{h}=\hat{T}(\hat{h})=P_\cH(T(\hat{h}))$ or \(0=P_G(\hat{h}-T(\hat{h}))\)
-    \item under linearity assumptions and $\cH=G$ both views agree
-    \item started with linear approximation results
-    \item Galerkin relaxation
-    \item Going a bit back .. If we solve in the linear approximation with gradient methods, we can write Bellman error via gradient of loss function. Replace gradient by eligibility vectors    
-    \item formulate TD\(\lambda\), eligibility vectors and \(\lambda\), how do I take into account how temporal difference plays a role? \(\lambda=1,0\) gives to extremes.
-    \item We later saw TD\((\lambda)\) has to do with bias variance, at this stage only as basic RL algorithm formulated in ODE setting 
-    \item TD\((\lambda)\) in linear approximation scheme, can generalize, but can't write down ODE anymore 
-    \item derived a view algorithm like networks, batched versions ... 
-    \item there we could alt least in the linear function approximation we can draw some connections, in non-linear versions, where we can't get much results 
-    \item TD schemes: saw different ways in the policy evaluation? Galerkin as generalization, but breaking down the theory? 
-    \item Additional observations: Observations and ODE approximation. Looking at specific probing signal (under some assumption) can connect to probability measure 
-    \item see that weighting of norms connects to a way in which are probing sampling our domain 
-    \item Exploration aspect in a different session: On vs off policy (theory vs improving policy)
-    \item We had one example of off-policy divergence. Counter example: We have to be careful 
-    \item Concluding part of this section was: what kind of divergence can arise? Deadly triad: being able to explain difficulty 
-    \item Switch to other sources 
-    \item MC policy evaluation aspects. Instead of TD view (1 step), I am now observing estimates of cost 
-    \item We need to approximate a function, where we have some function values. At first we solved some linear equations system 
-    \item MC view gives a different way of solving this (more efficiently)
-    \item Importance sampling view: Might put more importance on total cost, which are large! 
-    \item We don't really want to solve equations \(\implies\) gradient methods in least square approximation problems 
-    \item This gives direct policy evaluation (as before we had TD view for example). Batch versions 
-    \item Rewriting gives TD error, saw this is TD(1)
-    \item used this as motivation for multistep methods 
-    \item T(\(\lambda\)), l+1 step version of bellman operator to reintroduce TD\((\lambda)\)
-    \item first view into stochastics: bias variance Tradeoff, \(\lambda\) is our tuing parameter, TD(1) might not be the best
-    \item final section on policy gradient methods, before we approximated Q or value function and indirectly got policy. Now we approximate policy directly
-    \item What if we parametrize our policy? Stochastic policy (softmax example)
-    \item Policy gradient theorems, seeing in different ways: total cost can be evaluated reasonable 
-    \item Theorem to compute score?
-    \item REINFORCE approach first in finite horizon, then infinite horizon, policy gradient results to show convergence results 
-    \item Mini-batch REINFORCE, to get unbiased estimator, almost sure convegrence for L-smooth functions (connecting back to earlier)
-    \item view lemmas, assumption (~ QSA1)
-    \item Gradient of total cost goes to zero -> goes to critical point
-    \item Also for stochastic gradient stuff we can do convergence theory 
-    \item Last two lectures: Actor critic: combining policy and Q function approximation and use both 
-    \item one can see AC as policy iteration, we came back to policy iteration anyway.
-\end{itemize}
-
-Overall: reasonable overview of RL both theory and praxis, still a lot missing! nobody does linear function approximation, but rather NNs.
-Hope: guide algorithm by theory.
-
-\markeol{24}
 
 
 

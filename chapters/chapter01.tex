@@ -15,29 +15,11 @@ The overall aim is to find a policy \(\phi\) that sticks close to $r(k),k\geq 0$
 \[u(k)=u_\ff(k)+U_{fb}(k)\]
 where $u_\ff$ is the planing to reach the overall goal and $u_{\fb}$ actual steering, updated "all the time".
 
-Some examples from the book:
-
-\begin{figure}[H]\label{fig:1.01}
-    \centering
-    \includegraphics[width=.7\textwidth]{example-image}
-    \caption{Sketch 1.01}
-\end{figure}
-
-\begin{figure}[H]\label{fig:1.02}
-    \centering
-    \includegraphics[width=.7\textwidth]{example-image}
-    \caption{Sketch 1.02: Mountain car}
-\end{figure}
 
 Difference: In Reinforcement learning, we don't start with a model / ode. 
 
 Some part of reinforcement learning works model-free (i.e. assumes the model only implicitly)
 
-\begin{figure}[H]\label{fig:1.03}
-    \centering
-    \includegraphics[width=.7\textwidth]{example-image}
-    \caption{Sketch 1.03: cart pole / inverted pendulum}
-\end{figure}
 
 Next example: Acrobot (more then one equilibrium)
 
@@ -94,7 +76,6 @@ inserting this into (\ref{eq:lssm}) yields
 \end{align*}
 
 Closed vs open loop: In closed loops we don't change our course based on observations, while in open loop systems we do.
-% TODO: Check
 
 \section{State Space Models in continuous Time}
 
@@ -105,12 +86,6 @@ If \(f\) is linear we get
     \frac{d}{dt}x&=Ax+Bu\\
     y&=Cx+Du
 \end{align*}
-
-\begin{figure}[H]\label{fig:1.04}
-    \centering
-    \includegraphics[width=.7\textwidth]{example-image}
-    \caption{Sketch 1.04}
-\end{figure}
 
 To discretize we use the \dhighlight{forward Euler method}. Given time interval \(\Delta\)
 \[x(k+1)=x(k)+\Delta f(x(k),u(k))\]
@@ -150,12 +125,6 @@ Given \(x^e\), we usually assume \(C(x^e)=0\). Generally, we consider a discount
     \(\epsilon>0\exists \delta>0\) s.t. \(\Vert x_0-x^e\Vert < \delta\), then 
     \[\Vert \cX(k;x_0)-\cX(k;x^e)\Vert<\epsilon \forall k\geq 0\]
 \end{definition}
-
-\begin{figure}[H]\label{fig:1.05}
-    \centering
-    \includegraphics[width=.7\textwidth]{example-image}
-    \caption{Sketch about Lyapunov stability}
-\end{figure}
 
 \begin{definition}\label{def:1.6}
     An equilibrium is said to be \dhighlight{asymptotically stable} if 
@@ -401,11 +370,6 @@ Under the following assumptions \(J^\star\) is finite:
 \end{example}
 
 \section*{Bellmann equation}
-\begin{figure}[H]\label{fig:1.06}
-    \centering
-    \includegraphics[width=.7\textwidth]{example-image}
-    \caption{Sketch 1.06; Principle of optimality}
-\end{figure}
 
 \dhighlight{Observation:}
 
@@ -781,12 +745,6 @@ To formulate this as a discounted problem
         x & x\in A
     \end{cases}\) 
 \end{enumerate}
-
-\begin{figure}[H]\label{fig:1.07}
-    \centering
-    \includegraphics[width=.7\textwidth]{example-image}
-    \caption{Sketch: mountain car value function}
-\end{figure}
 
 Can be numerically very hard, since the value function can be quite discontinuous, but not all value functions are that bad.
 

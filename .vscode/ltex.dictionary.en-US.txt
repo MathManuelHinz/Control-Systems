@@ -1,2 +1,5 @@
 Polyak-Lojasiewicz
-Polyak-Lojasiewicz
+Lyapunov
+Lindelöf
+Grönwall
+Galerkin
