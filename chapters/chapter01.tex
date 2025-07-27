@@ -188,7 +188,7 @@ Usually, \(S_V(r)=X\) is impossible, a common assumption is \dhighlight{coersive
         &=c(x)+ J(\mathcal{F}(x))
     \end{align*}
     This is the \dhighlight{dynamic programming principle} for a \dhighlight{fixed policy}.\marginnote{We are separating one step!}
-    It is also called \dhighlight{Bellmann equation}.\marginnote{\\ This is the same Bellman from the curse of dimensionality!}
+    It is also called \dhighlight{Bellman equation}.\marginnote{\\ This is the same Bellman from the curse of dimensionality!}
     For 1. from this it follows \begin{align*}
         J(x(k+1))+c(x)-J(x(k)) &= 0
     \end{align*}
@@ -369,7 +369,7 @@ Under the following assumptions \(J^\star\) is finite:
     with \(K^\star\) depends on \(M^\star,R,F,G\). \marginnote{and implicitly on \(c\)}
 \end{example}
 
-\section*{Bellmann equation}
+\section*{Bellman equation}
 
 \dhighlight{Observation:}
 
@@ -382,10 +382,10 @@ This gives \marginnote{which can be seen as a kind of fix point equation}
 \[J^*(x)=\min_{u[0,\dots,k_m-1]}\left[\sum_{k=0}^{k_m-1}c(x(k),u(k))\right]+J^\star(x(k_m)).\]
 
 With \(k_m=1\) we have shown the following theorem 
-\begin{theorem}[\dhighlight{Bellmann equation}, \dhighlight{Dynamic Programming} equation]\label{thm:1.13}
+\begin{theorem}[\dhighlight{Bellman equation}, \dhighlight{Dynamic Programming} equation]\label{thm:1.13}
     Assume that \(J^\star\) is finite and optimal control \(u^\star\) solving (\ref{eq:OCP}) exists.
     Then the value function satisfies 
-    \begin{equation}\label{eq:bellmann}
+    \begin{equation}\label{eq:bellman}
         J^\star(x)=\min_{u}\{c(x,u)+J^\star(\cF(x,u))\}
     \end{equation}
 \end{theorem}
@@ -395,7 +395,7 @@ the minimum feedback law at \(x\). Then the optimal control is expressed as
 \[u^\star(k)=\phi^\star(x^\star(k)).\]
 
 \begin{definition}[Q-function]\label{def:1.14}\marginnote{Definition, which is not so useful for the analysis, but for the pratical application!}
-    The function of two variables within the minimum in (\ref{eq:bellmann}) is called \dhighlight{Q}-function.
+    The function of two variables within the minimum in (\ref{eq:bellman}) is called \dhighlight{Q}-function.
     \[Q^\star(x,u)=c(x,u)+J^\star(\cF(x,u))\]
     In the optimal case we write \(Q^\star\). Thus 
     \[J^\star(x)=\min_{\bar{u}}Q^\star(x,\bar{u}).\] 
@@ -690,7 +690,7 @@ We follow a given/ observed state-action trajectory \((x(k),u(k))_{k=0}^N\)
 \begin{align*}
     Q^\star(x(k),u(k))=c(x(k),u(k))+Q^\star(x(k+1),u(k+1))
 \end{align*}
-The temporal difference / Bellmann error 
+The temporal difference / Bellman error 
 \begin{align*}
     D_{k+1}(Q^\theta)&=-Q^\theta(x(k),u(k))+c(x(k),u(k))+Q^\theta(x(k+1),u(k+1))
 \end{align*} 
@@ -762,8 +762,8 @@ Then
 \begin{align*}
     J^\star(x^a)=\underbrace{\min_{\underbar{u}}\sum_{k=0}^\infty c^a(x^a(k),u(k))}_{J^\star(x,\tau)},\ x^a(0)=(x,0)
 \end{align*}
-The Bellmann equation from theorem \ref{thm:1.13} now becomes 
-\begin{equation}\label{eq:bellmann_finitetime}
+The Bellman equation from theorem \ref{thm:1.13} now becomes 
+\begin{equation}\label{eq:bellman_finitetime}
     J^\star(x,\tau)=\min_u\left\{c(x,u)1_{\{\tau \leq N\}}+J^\star(\cF(x,u),\tau+1)\right\}
 \end{equation}
 
@@ -785,7 +785,7 @@ each step of the state-action trajectory as a finite horizon
 problem. 
 The control is 
 \[u(k)=\phi^{\text{mpc}}(x^\star(k))=\phi^\star(x^\star(k),0),\]
-where \(\phi^\star\) from the finite horizon setting (\ref{eq:bellmann_finitetime})
+where \(\phi^\star\) from the finite horizon setting (\ref{eq:bellman_finitetime})
 for \textit{small} \(N\).
 
 Consider \marginnote{Due to the finite horizon we are not optimal ...}
@@ -828,7 +828,7 @@ Definition \ref{def:1.5}, \ref{def:1.6} carry over.
     \begin{itemize}
         \item[(i)] \(V\in C^1\)
         \item[(ii)] \(V\) is inf-compact
-        \item[(iii)] For any solution \(x\), whenever \(X_t\neq x^e\) \[\frac{d}{dt}v(x_t)<0.\]   
+        \item[(iii)] For any solution \(x\), whenever \(X_t\neq x^e\) \[\frac{d}{dt}V(x_t)<0.\]   
     \end{itemize}
 \end{definition}
 
@@ -853,7 +853,7 @@ we have shown
 \begin{proposition}[Continuous Comparison theorem]\label{prop:1.22}
     If (\ref{eq:poisson_con}) holds for non-negative \(c,V,\eta\), then we have 
     \begin{equation}\label{eq:comp_thm_cont}
-        V(X_t)+\int_0^Tc(x_t)dt\leq V(x)+T\eta, \ x_0=x\in X,T>0 
+        V(x_T)+\int_0^Tc(x_t)dt\leq V(x)+T\eta, \ x_0=x\in X,T>0 
     \end{equation}
     If \(\eta=0\)
     \[\int_0^\infty c(x_t)dt\leq V(x)\]
@@ -871,7 +871,7 @@ We assume \[f(x^e,u^e)=0\] for some \(u^e\) and
 which yields that \(J\) is finite. As before 
 \[J^\star(x)=\min_u \int_0^\infty c(x_t,u_t)dt,\ x_0=x\in X.\]
 
-We extend the Bellmann equation to continuous times 
+We extend the Bellman equation to continuous times 
 \begin{align*}
     J^\star(x)&=\min_{u[0,\infty]}\left[\int_0^{t_m} c(x_t,u_t)dt+\int_{t_m}^\infty c(x_t,u_t)dt\right]\\ % TODO: 1 equation
     &= \min_{u[0,t_m]}\left[\int_0^{t_m} c(x_t,u_t)dt+\underbrace{\min_{u[t_m,\infty)}\int_{t_m}^\infty c(x_t,u_t)dt}_{J^\star(x_{t_m})}\right]
@@ -888,8 +888,8 @@ and write \(\Delta x=x_{t_m}-x_0=x_m-x\). We now use Taylor on the above express
 
 \begin{theorem}\label{thm:1.23}
     If the value function \(J^\star\) has continuous derivatives, then it 
-    satisfies the \dhighlight{Hamilton-Jacobi-Bellmann equation}
-    \begin{equation}\label{eq:hamilton_jacobi_bellmann}
+    satisfies the \dhighlight{Hamilton-Jacobi-Bellman equation}
+    \begin{equation}\label{eq:hamilton_jacobi_bellman}
         0=\min_{u}\left[c(x,u)+\nabla J^\star(x)\cdot f(x_0,u_0)\right]
     \end{equation}
 \end{theorem}
@@ -922,7 +922,7 @@ One can show
 \textit{everything} we observed so far carries over, assuming \(J^\star\) is finite, we 
 have 
 \[J^\star(x)=x^\intercal M^\star x\]
-the HSB (\ref{eq:hamilton_jacobi_bellmann}) gives 
+the HSB (\ref{eq:hamilton_jacobi_bellman}) gives 
 \begin{align*}
     \phi^\star(x)&=\argmin_u \left\{x^\intercal S x+ u^\intercal R u+ \left[2 M^\star x\right]^\intercal \left[F_x+ Gu\right] \right\}\\
     &=\argmin_u \left\{u^\intercal R u+2 x^\intercal M^\star Gu \right\}
@@ -936,7 +936,7 @@ and we get
 \[\phi^\star(x)=-R^{-1}G^\intercal M^\star x\]
 and 
 \[\frac{d}{dt}x^\star=\left[F-GR^{-1}G^\intercal M^\star\right]x^\star.\]
-HSB (\ref{eq:hamilton_jacobi_bellmann}) further gives 
+HSB (\ref{eq:hamilton_jacobi_bellman}) further gives 
 \begin{align*}
     0&=\{x^\intercal S x+ u^\intercal R u+[2M^\star x]^\intercal \left[Fx+Gu\right]\}\restrict{u=\phi^\star(x)}\\
     &x^\intercal \left\{S+M^\star GR^{-1}\Id G^\intercal M^\star \right\}x+x^\intercal\left\{2M^\star F+2M^\star G R^{-1}G^\intercal M^\star \right\}x
